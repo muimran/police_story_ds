@@ -1,0 +1,403 @@
+[
+    {
+      "country": "Bulgaria",
+      "lat": 42.7339,
+      "long": 25.4858,
+      "value": 30045005,
+      "label_text": "Tk 3 cr",
+      "export_barriers": "Y",
+      "exporter_companies": [
+        {
+          "exporter_company": "An unknown supplier",
+          "export_value": 30045006
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "RAB Forces Headquarters",
+          "import_value": 30045006
+        }
+      ]
+    },
+    {
+      "country": "Canada",
+      "lat": 56.1304,
+      "long": -106.3468,
+      "value": 884559696,
+      "label_text": "Tk 88.5 cr",
+      "export_barriers": "Y",
+      "exporter_companies": [
+        {
+          "exporter_company": "Panmark Impex Pte Ltd",
+          "export_value": 884559697
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "Bangladesh Police",
+          "import_value": 661783350
+        },
+        {
+          "importer_agency": "RAB Forces Headquarters",
+          "import_value": 222776347
+        }
+      ]
+    },
+    {
+      "country": "China",
+      "lat": 35.8617,
+      "long": 104.1954,
+      "value": 35983783,
+      "label_text": "Tk 3.6 cr",
+      "export_barriers": "N",
+      "exporter_companies": [
+        {
+          "exporter_company": "Redington Distribution Pte Ltd",
+          "export_value": 35983784
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "The NTMC",
+          "import_value": 35983784
+        }
+      ]
+    },
+    {
+      "country": "Cyprus",
+      "lat": 35.1264,
+      "long": 33.4299,
+      "value": 2098832199,
+      "label_text": "Tk 210 cr",
+      "export_barriers": "Y",
+      "exporter_companies": [
+        {
+          "exporter_company": "Speedpial Trading LLC",
+          "export_value": 1721015
+        },
+        {
+          "exporter_company": "Spider Digital Innovation FZE",
+          "export_value": 91151659
+        },
+        {
+          "exporter_company": "Passitora Ltd (Cyprus)",
+          "export_value": 12580302
+        },
+        {
+          "exporter_company": "Panmark Impex Pte Ltd",
+          "export_value": 1921172028
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "The NTMC",
+          "import_value": 12580302
+        }
+      ]
+    },
+    {
+      "country": "Czech Republic",
+      "lat": 49.8175,
+      "long": 15.473,
+      "value": 182348956,
+      "label_text": "Tk 18.2 cr",
+      "export_barriers": "Y",
+      "exporter_companies": [
+        {
+          "exporter_company": "Panmark Impex Pte Ltd",
+          "export_value": 182348956
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "Bangladesh Police",
+          "import_value": 182348956
+        }
+      ]
+    },
+    {
+      "country": "France",
+      "lat": 46.6034,
+      "long": 1.8883,
+      "value": 220629,
+      "label_text": "Tk 2.2 lakh",
+      "export_barriers": "Y",
+      "exporter_companies": [
+        {
+          "exporter_company": "Intersec (France)",
+          "export_value": 220630
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "Bangladesh Police",
+          "import_value": 220630
+        }
+      ]
+    },
+    {
+      "country": "Germany",
+      "lat": 51.1657,
+      "long": 10.4515,
+      "value": 602948696,
+      "label_text": "Tk 60.3 cr",
+      "export_barriers": "Y",
+      "exporter_companies": [
+        {
+          "exporter_company": "Panmark Impex Pte Ltd",
+          "export_value": 602948697
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "Bangladesh Police",
+          "import_value": 602948697
+        }
+      ]
+    },
+    {
+      "country": "Malaysia",
+      "lat": 3.139,
+      "long": 101.6869,
+      "value": 28486641,
+      "label_text": "Tk 2.8 cr",
+      "export_barriers": "N",
+      "exporter_companies": [
+        {
+          "exporter_company": "An unknown supplier",
+          "export_value": 28486642
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "RAB Forces Headquarters",
+          "import_value": 28486642
+        }
+      ]
+    },
+    {
+      "country": "Netherlands",
+      "lat": 52.1326,
+      "long": 5.2913,
+      "value": 28839198,
+      "label_text": "Tk 2.8 cr",
+      "export_barriers": "Y",
+      "exporter_companies": [
+        {
+          "exporter_company": "Spider Digital Innovation FZE",
+          "export_value": 28839199
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "The NTMC",
+          "import_value": 28839199
+        }
+      ]
+    },
+    {
+      "country": "Philippines",
+      "lat": 13.4102,
+      "long": 122.5609,
+      "value": 969195,
+      "label_text": "Tk 9.7 lakh",
+      "export_barriers": "N",
+      "exporter_companies": [
+        {
+          "exporter_company": "Yaana Technologies (US)",
+          "export_value": 969196
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "The NTMC",
+          "import_value": 969196
+        }
+      ]
+    },
+    {
+      "country": "Singapore",
+      "lat": 1.3521,
+      "long": 103.8198,
+      "value": 4110668165,
+      "label_text": "Tk 411 cr",
+      "export_barriers": "N",
+      "exporter_companies": [
+        {
+          "exporter_company": "Panmark Impex Pte Ltd",
+          "export_value": 3659532128
+        },
+        {
+          "exporter_company": "Ecomtrade Holdings Pte Ltd",
+          "export_value": 451136037
+        },
+        {
+          "exporter_company": "Teledyne FLIR Detection, Inc. (USA)",
+          "export_value": 116479501
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "Bangladesh Police",
+          "import_value": 2718391019
+        },
+        {
+          "importer_agency": "The NTMC",
+          "import_value": 451136037
+        },
+        {
+          "importer_agency": "RAB Forces Headquarters",
+          "import_value": 941141109
+        }
+      ]
+    },
+    {
+      "country": "Switzerland",
+      "lat": 46.8182,
+      "long": 8.2275,
+      "value": 443233240,
+      "label_text": "Tk 44.3 cr",
+      "export_barriers": "Y",
+      "exporter_companies": [
+        {
+          "exporter_company": "Roya International Trading",
+          "export_value": 430652939
+        },
+        {
+          "exporter_company": "Passitora Ltd (Cyprus)",
+          "export_value": 12580302
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "Bangladesh Police",
+          "import_value": 430652939
+        },
+        {
+          "importer_agency": "The NTMC",
+          "import_value": 12580302
+        }
+      ]
+    },
+    {
+      "country": "Taiwan",
+      "lat": 23.6978,
+      "long": 120.9605,
+      "value": 4575515,
+      "label_text": "Tk 45.8 lakh",
+      "export_barriers": "N",
+      "exporter_companies": [
+        {
+          "exporter_company": "Yaana Technologies (US)",
+          "export_value": 4575516
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "The NTMC",
+          "import_value": 4575516
+        }
+      ]
+    },
+    {
+      "country": "Turkey",
+      "lat": 38.9637,
+      "long": 35.2433,
+      "value": 344177365,
+      "label_text": "Tk 34.4 cr",
+      "export_barriers": "N",
+      "exporter_companies": [
+        {
+          "exporter_company": "Bay Galata Danismanlik Hizmetleri A",
+          "export_value": 344177366
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "Bangladesh Police",
+          "import_value": 344177366
+        }
+      ]
+    },
+    {
+      "country": "United Arab Emirates",
+      "lat": 23.4241,
+      "long": 53.8478,
+      "value": 92872673,
+      "label_text": "Tk 9.3 cr",
+      "export_barriers": "N",
+      "exporter_companies": [
+        {
+          "exporter_company": "Speedpial Trading LLC",
+          "export_value": 1721015
+        },
+        {
+          "exporter_company": "Spider Digital Innovation FZE",
+          "export_value": 91151659
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "The NTMC",
+          "import_value": 92872674
+        },
+        {
+          "importer_agency": "The NTMC",
+          "import_value": 597625154
+        }
+      ]
+    },
+    {
+      "country": "United Kingdom",
+      "lat": 55.3781,
+      "long": -3.436,
+      "value": 68502749,
+      "label_text": "Tk 6.8 cr",
+      "export_barriers": "Y",
+      "exporter_companies": [
+        {
+          "exporter_company": "Panmark Impex Pte Ltd",
+          "export_value": 68502750
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "Bangladesh Police",
+          "import_value": 68502750
+        }
+      ]
+    },
+    {
+      "country": "United States of America",
+      "lat": 39.8283,
+      "long": -98.5795,
+      "value": 714104654,
+      "label_text": "Tk 71.4 cr",
+      "export_barriers": "Y",
+      "exporter_companies": [
+        {
+          "exporter_company": "Redington Distribution Pte Ltd",
+          "export_value": 35983784
+        },
+        {
+          "exporter_company": "Vehere Interactive Pvt Ltd",
+          "export_value": 346630
+        },
+        {
+          "exporter_company": "Yaana Technologies (US)",
+          "export_value": 561294740
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "Bangladesh Police",
+          "import_value": 116479501
+        },
+        {
+          "importer_agency": "The NTMC",
+          "import_value": 597625154
+        }
+      ]
+    }
+  ]
+  
