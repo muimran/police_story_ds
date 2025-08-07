@@ -12,7 +12,7 @@
   let scroller;
   let activeIndex = -1;
 
-  mapboxgl.accessToken = 'pk.eyJ1IjoiaW1yYW5kYXRhIiwiYSI6ImNtMDRlaHh1YTA1aDEybHI1ZW12OGh4cDcifQ.fHLLFYQx7JKPUp2Sl1jtYg';
+  mapboxgl.accessToken = 'pk.eyJ1IjoiaW1yYW5kYXRhIiwiYSI6ImNtZHoxOXV3YTA1dHoya3F2dG5neXRxN2oifQ.1wSQLtAiXbRlFuzwlSJ9Gg';
 
   const scrollySteps = Array.from({ length: 10 }, (_, i) => ({
     id: `step-${i + 1}`,
