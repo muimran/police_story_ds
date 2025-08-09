@@ -20,6 +20,8 @@
         }
       ]
     },
+
+
     {
       "country": "Canada",
       "lat": 56.1304,
@@ -45,6 +47,8 @@
         }
       ]
     },
+
+
     {
       "country": "China",
       "lat": 35.8617,
@@ -66,6 +70,8 @@
         }
       ]
     },
+
+
     {
       "country": "Cyprus",
       "lat": 35.1264,
@@ -103,6 +109,8 @@
         }
       ]
     },
+
+
     {
       "country": "Czech Republic",
       "lat": 49.8175,
@@ -124,6 +132,8 @@
         }
       ]
     },
+
+
     {
       "country": "France",
       "lat": 46.6034,
@@ -145,6 +155,8 @@
         }
       ]
     },
+
+
     {
       "country": "Germany",
       "lat": 51.1657,
@@ -166,27 +178,32 @@
         }
       ]
     },
+
+
     {
-      "country": "Malaysia",
-      "lat": 3.139,
-      "long": 101.6869,
-      "value": 28486641.88,
-      "label_text": "Tk 2.8 cr",
-      "export_barriers": "N",
+      "country": "Italy",
+      "lat": 42.8,
+      "long": 12.5,
+      "value": 0.0000000,
+      "label_text": "Tk 0.0 cr",
+      "export_barriers": "x",
       "linked_countries": [],
       "exporter_companies": [
         {
-          "exporter_company": "An unknown supplier",
-          "export_value": 28486641.88
+          "exporter_company": "xxxxxxxx",
+          "export_value": 0.0000000
         }
       ],
       "importers": [
         {
-          "importer_agency": "RAB Forces Headquarters",
-          "import_value": 28486641.88
+          "importer_agency": "xxxxxxxxxx",
+          "import_value": 0.0000000
         }
       ]
     },
+
+
+  
     {
       "country": "Netherlands",
       "lat": 52.1326,
@@ -208,6 +225,8 @@
         }
       ]
     },
+
+
     {
       "country": "Philippines",
       "lat": 13.4102,
@@ -229,6 +248,29 @@
         }
       ]
     },
+
+    {
+      "country": "Poland",
+      "lat": 52.0,
+      "long": 19.0,
+      "value": 0.0000000,
+      "label_text": "Tk 0.0 cr",
+      "export_barriers": "x",
+      "linked_countries": [],
+      "exporter_companies": [
+        {
+          "exporter_company": "xxxxxxxx",
+          "export_value": 0.0000000
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "xxxxxxxxxx",
+          "import_value": 0.0000000
+        }
+      ]
+    },
+
     {
       "country": "Singapore",
       "lat": 1.3521,
@@ -266,6 +308,31 @@
         }
       ]
     },
+
+
+    {
+      "country": "South Korea",
+      "lat": 36.5,
+      "long": 127.8,
+      "value": 28486641.88,
+      "label_text": "Tk 2.8 cr",
+      "export_barriers": "N",
+      "linked_countries": [],
+      "exporter_companies": [
+        {
+          "exporter_company": "An unknown supplier",
+          "export_value": 28486641.88
+        }
+      ],
+      "importers": [
+        {
+          "importer_agency": "RAB Forces Headquarters",
+          "import_value": 28486641.88
+        }
+      ]
+    },
+
+
     {
       "country": "Switzerland",
       "lat": 46.8182,
@@ -295,6 +362,8 @@
         }
       ]
     },
+
+
     {
       "country": "Taiwan",
       "lat": 23.6978,
@@ -316,6 +385,8 @@
         }
       ]
     },
+
+
     {
       "country": "Turkey",
       "lat": 38.9637,
@@ -337,6 +408,8 @@
         }
       ]
     },
+
+
     {
       "country": "United Arab Emirates",
       "lat": 23.4241,
@@ -362,6 +435,8 @@
         }
       ]
     },
+
+
     {
       "country": "United Kingdom",
       "lat": 55.3781,
@@ -383,6 +458,8 @@
         }
       ]
     },
+
+    
     {
       "country": "United States of America",
       "lat": 39.8283,
