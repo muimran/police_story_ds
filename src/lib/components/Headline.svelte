@@ -37,10 +37,13 @@
 <div class="headline-container">
     <h1 class="article-headline">
         <span class="line-1">July Uprising</span>
-        <span class="line-2">Anatomy of BGB shootings in</span>
-        <span class="line-3">Rampura</span>
+        <span class="line-2">Commanders of crackdown</span>
+        <span class="line-3">Police leadership during</span>
     </h1>
     
+    July uprising uncovered
+    
+
     <p class="standfirst-text">
         A joint investigation by The Daily Star and Tech Global Institute reveals how a Dhaka neighbourhood became a hotspot of state-sanctioned killings on July 19, 2024
     </p>

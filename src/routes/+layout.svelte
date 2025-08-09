@@ -1,24 +1,24 @@
+<!-- src/routes/+layout.svelte -->
 <script>
-  // 1. Import the Header component you created in 'src/lib/components/'
-  import Hero from '$lib/components/Hero.svelte';
-  import 'mapbox-gl/dist/mapbox-gl.css';
+  // 1. Import your Navbar component
+  import Navbar from '$lib/components/Navbar.svelte';
 
+  // Keep any global CSS imports
+  import 'mapbox-gl/dist/mapbox-gl.css';
 </script>
 
-<!-- 2. Place the Header component here -->
-<!-- It will take up the full screen, and the content below will appear on scroll -->
-<Hero />
+<!-- 2. Place the Navbar component here. It will now be on every page. -->
+<Navbar />
 
 <!-- 
-  3. The <slot /> renders your individual page content (e.g., +page.svelte).
-     Wrapping it in <main> is good practice for accessibility.
+  3. The <slot /> renders your individual page content. 
+     The Hero will go inside the +page.svelte file, which gets rendered here.
 -->
 <main>
   <slot />
 </main>
 
 <style>
-  /* This is your original global style block, which is good to keep */
   :global(body) {
     margin: 0;
     padding: 0;
@@ -26,17 +26,16 @@
     background: #ffffff;
   }
 
-  /* I removed the #svelte selector as it's not typically needed and 
-     the body/html rule covers it */
   :global(html), :global(body) {
     height: 100%;
-    width: 100%; /* Use 100% instead of 100vw to avoid potential horizontal scrollbars */
+    width: 100%;
     margin: 0;
     padding: 0;
   }
 
-  /* Optional: Add some padding to your main content area so it's not
-     stuck to the edges of the screen once you scroll past the header. */
   main {
+    /* Since the Navbar is position:absolute, it doesn't take up space.
+       The content inside <main> will start at the very top of the page,
+       underneath the Navbar. This is usually what you want for a hero image. */
   }
 </style>

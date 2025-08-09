@@ -10,15 +10,16 @@
 
 	// --- Tooltip State ---
 	let timeoutId;
+	let tooltip;
 
 	// --- 2. CONFIGURATION & HELPERS ---
 	const rankColors = {
-		'Additional Deputy Police Commissioner': '#4E79A7', // Blue
-		'Additional Police Commissioner': '#BAB0AC',       // Gray
-		'Assistant Police Commissioner': '#4E79A7',        // Blue
-		'Deputy Police Commissioner': '#4E79A7',           // Blue
-		'Joint Police Commissioner': '#BAB0AC',            // Gray
-		'Police Commissioner': '#BAB0AC'                   // Gray
+		'Additional Deputy Police Commissioner': '#4E79A7',
+		'Additional Police Commissioner': '#BAB0AC',
+		'Assistant Police Commissioner': '#4E79A7',
+		'Deputy Police Commissioner': '#4E79A7',
+		'Joint Police Commissioner': '#BAB0AC',
+		'Police Commissioner': '#BAB0AC'
 	};
 
 	function getStartOfWeek(date) {
@@ -32,7 +33,7 @@
 
 	function formatMonthYear(date) {
 		const month = date.toLocaleString('default', { month: 'short' });
-		if (date.getMonth() === 0 || axisLabels.length === 0) {
+		if (date.getMonth() === 0) {
 			return `${month} ${date.getFullYear()}`;
 		}
 		return month;
@@ -47,40 +48,49 @@
 	}
 
 	// --- Tooltip Handlers ---
-	let tooltip;
 	onMount(() => {
 		tooltip = document.createElement('div');
 		tooltip.className = 'tooltip';
 		document.body.appendChild(tooltip);
+
+		return () => {
+			document.body.removeChild(tooltip);
+		};
 	});
 
 	function handleMouseOver(event, officer) {
 		clearTimeout(timeoutId);
-		console.log('mouseover:', officer.officer, officer.rank, officer.date);
 		tooltip.style.visibility = 'visible';
 		tooltip.innerHTML = `<strong>${officer.officer}</strong><br>Rank: ${officer.rank}<br>Date: ${formatFullDate(officer.dateObj)}`;
 		updateTooltipPosition(event.pageX, event.pageY);
 	}
 
 	function handleMouseMove(event) {
-		console.log('mousemove at', event.pageX, event.pageY);
 		updateTooltipPosition(event.pageX, event.pageY);
 	}
 
 	function handleMouseOut() {
-		console.log('mouseout');
 		timeoutId = setTimeout(() => {
 			tooltip.style.visibility = 'hidden';
 		}, 100);
 	}
 
 	function updateTooltipPosition(pageX, pageY) {
-		const offsetX = 10;
-		const offsetY = 10;
-		const tooltipWidth = 200; // Approximate width
-		const tooltipHeight = 80; // Approximate height
-		tooltip.style.left = Math.max(offsetX, Math.min(pageX + offsetX, window.innerWidth - tooltipWidth)) + 'px';
-		tooltip.style.top = Math.max(offsetY, Math.min(pageY + offsetY, window.innerHeight - tooltipHeight)) + 'px';
+		const offsetX = 15;
+		const offsetY = 15;
+		tooltip.style.left = `${pageX + offsetX}px`;
+		tooltip.style.top = `${pageY + offsetY}px`;
+
+		const tooltipRect = tooltip.getBoundingClientRect();
+		const windowWidth = window.innerWidth;
+		const windowHeight = window.innerHeight;
+
+		if (pageX + offsetX + tooltipRect.width > windowWidth) {
+			tooltip.style.left = `${pageX - offsetX - tooltipRect.width}px`;
+		}
+		if (pageY + offsetY + tooltipRect.height > windowHeight) {
+			tooltip.style.top = `${pageY - offsetY - tooltipRect.height}px`;
+		}
 	}
 
 	// --- 3. DATA FETCHING & PROCESSING ---
@@ -98,7 +108,6 @@
 				})
 				.filter((d) => d && d.officer && d.rank && !isNaN(d.dateObj.getTime()));
 			officerData = processed;
-			console.log('Loaded officerData:', officerData);
 		} catch (e) {
 			error = 'Failed to load officer data.';
 			console.error('Error loading CSV:', e);
@@ -158,11 +167,7 @@
 			cur.setMonth(cur.getMonth() + 1);
 		}
 		axisLabels = Array.from(labels.values());
-		console.log('Processed axisLabels:', axisLabels);
 	}
-
-	// Debug tooltip state
-	$: console.log('Tooltip state:', { visibility: tooltip?.style.visibility, left: tooltip?.style.left, top: tooltip?.style.top, innerHTML: tooltip?.innerHTML });
 </script>
 
 <div class="timeline-container">
@@ -171,16 +176,16 @@
 	{:else if error}
 		<p class="error">{error}</p>
 	{:else if processedData.length}
-		<div class="chart" on:mousemove={handleMouseMove}>
+		<div class="chart">
 			{#each processedData as group}
 				<div class="week-column" style="left: {group.positionPercent}%">
 					{#each group.officers as officer}
-						<!-- Default gray from Tableau 10 is used if rank is not found -->
 						<div
 							class="dot"
 							style="background-color: {rankColors[officer.rank] || '#BAB0AC'}"
 							on:mouseover={(e) => handleMouseOver(e, officer)}
 							on:mouseout={handleMouseOut}
+							on:mousemove={handleMouseMove}
 						></div>
 					{/each}
 				</div>
@@ -204,14 +209,14 @@
 	.tooltip {
 		position: absolute;
 		visibility: hidden;
-		background: rgba(0, 0, 0, 0.8);
+		background: rgba(0, 0, 0, 0.85);
 		color: #fff;
-		padding: 6px 10px;
+		padding: 8px 12px;
 		border-radius: 4px;
-		font-size: 0.85rem;
+		font-size: 0.9rem;
 		white-space: nowrap;
 		z-index: 1000;
-		max-width: 300px;
+		pointer-events: none; /* Critical for preventing tooltip flicker */
 	}
 
 	.timeline-container {
@@ -219,21 +224,22 @@
 		margin: 2rem auto;
 		padding: 0 20px;
 		box-sizing: border-box;
+		transition: padding 0.3s ease; /* Smooth transition for padding change */
 	}
 
 	.chart {
 		position: relative;
 		height: 250px;
-		margin-left: -20px;
 		margin-bottom: 10px;
+		transition: height 0.3s ease; /* Smooth transition for height change */
 	}
 
 	.week-column {
 		position: absolute;
 		bottom: 6px;
 		display: flex;
-		flex-direction: column;
-		justify-content: flex-end;
+		flex-direction: column-reverse; /* Stack dots from bottom up */
+		align-items: center;
 		transform: translateX(-50%);
 		min-width: 12px;
 	}
@@ -242,15 +248,16 @@
 		width: 12px;
 		height: 12px;
 		border-radius: 50%;
-		margin-bottom: 4px;
+		margin-top: 4px;
 		border: 1px solid rgba(0, 0, 0, 0.2);
 		cursor: pointer;
-		transition: transform 0.2s, box-shadow 0.2s;
+		transition: all 0.2s; /* Animate size, transform, and shadow */
 	}
 
 	.dot:hover {
 		transform: scale(1.4);
 		box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+		z-index: 10;
 	}
 
 	.axis {
@@ -285,10 +292,36 @@
 	.axis-text {
 		font-size: 0.8rem;
 		white-space: nowrap;
+		transition: font-size 0.3s ease; /* Smooth transition for font size */
 	}
 
 	.error {
 		color: #f44336;
 		font-weight: bold;
+	}
+
+	/* --- MOBILE RESPONSIVE STYLES --- */
+	@media (max-width: 768px) {
+		/* 1. Make the main chart area shorter for mobile screens */
+		.chart {
+			height: 150px; /* Reduced from 250px */
+		}
+
+		/* 2. Make the dots and their spacing smaller */
+		.dot {
+			width: 10px;  /* Reduced from 12px */
+			height: 10px; /* Reduced from 12px */
+			margin-top: 3px; /* Reduced from 4px */
+		}
+
+		/* 3. Reduce horizontal padding on the main container to save space */
+		.timeline-container {
+			padding: 0 10px; /* Reduced from 20px */
+		}
+
+		/* 4. Make axis text slightly smaller to prevent overlap */
+		.axis-text {
+			font-size: 0.75rem; /* Reduced from 0.8rem */
+		}
 	}
 </style>

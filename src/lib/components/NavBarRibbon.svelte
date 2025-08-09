@@ -10,32 +10,36 @@
 </div>
 
 <style>
+  :root {
+    --red-accent: #0e0d0d;
+  }
+  
   .top-ribbon {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     z-index: 1000;
-    
     display: flex;
     align-items: center;
     justify-content: flex-start;
-
-    padding: 2rem;
+    padding: 1rem 2rem;
+    background-color: #f5f5f5;
+    border-bottom: 2px solid var(--red-accent);
   }
 
   /* --- THIS IS THE SECTION TO EDIT --- */
   .ribbon-logo {
-    height: 70px; /* CHANGED: Was 40px. Adjust this for desktop size. */
-    width: auto;  /* Keep this as 'auto' to prevent stretching */
+    height: 50px; /* Set your desired desktop logo height here */
+    width: auto;
   }
 
   @media (max-width: 768px) {
     .top-ribbon {
-      padding: 1.5rem;
+      padding: 1rem;
     }
     .ribbon-logo {
-      height: 35px; /* CHANGED: Was 30px. Adjust this for mobile size. */
+      height: 35px; /* Set your desired mobile logo height here */
     }
   }
   /* --- END OF SECTION --- */

@@ -24,23 +24,23 @@
 	const steps = [
 		{
 			title: 'The Entire Group',
-			description: 'In total, 365 officers were part of the reshuffle. These circles represent every individual, separated by their final status: Transferred (green), Remained (orange), or Unknown (grey).'
+			description: 'During the July uprising, 365 officers with the rank of Assistant Commissioner (AC) or higher were posted in the DMP area. Each circles represents every individual police officer'
 		},
 		{
-			title: 'Isolating the Transfers',
-			description: 'To focus on the movement, we can fade out all but the 236 officers who were confirmed to have been transferred to a new post.'
+			title: '88% are forced out',
+			description: 'Of these, 45 remain in their posts. The other 320 have either been transferred out, retired, or fled. The Daily Star acquired the transfer information of 236 senior officers. '
 		},
 		{
 			title: 'A Split in Command',
-			description: 'The transferred officers are now separated by rank. The small group of high-ranking officials (orange) is separated from all other ranks (blue), illustrating the strategic placement of leadership.'
+			description: 'Among them, 64 held the rank of Deputy Commissioner (DC) or above (orange), while the remaining 172 were ranked AC or ADC (blue).'
 		},
 		{
 			title: 'Destinations of Transfers',
-			description: 'The officers are regrouped into their destination departments, outlined here, revealing that the majority were sent to Specialized Units and Training facilities.'
+			description: 'These officers were reassigned to 21 different outposts, which we grouped into five categories. 45% of the senior-most officers (DC or above) are transferred to range DIG’s offices (central and regional administration). The largest share of transfers overall went to specialized operational units such as RAB and APBn.'
 		},
 		{
 			title: 'A Question of Attachment',
-			description: 'Finally, the officers are split by whether their transfer included an "attachment." Attached transfers are often temporary, distinct from permanent reassignments.'
+			description: '14% of all transferred officers were “attached” to their new outposts. In police terminology, an attached officer has no assigned duties or post and is merely stationed at a location—effectively sidelined without formal suspension. Notably, half of all DCs and higher-ranked officers ended up in this attached status.'
 		}
 	];
 
