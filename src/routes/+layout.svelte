@@ -1,13 +1,13 @@
 <script>
   // 1. Import the Header component you created in 'src/lib/components/'
-  import Header from '$lib/components/Header.svelte';
+  import Hero from '$lib/components/Hero.svelte';
   import 'mapbox-gl/dist/mapbox-gl.css';
 
 </script>
 
 <!-- 2. Place the Header component here -->
 <!-- It will take up the full screen, and the content below will appear on scroll -->
-<Header />
+<Hero />
 
 <!-- 
   3. The <slot /> renders your individual page content (e.g., +page.svelte).

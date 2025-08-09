@@ -1,12 +1,10 @@
 <script>
   import PoliceMap from '$lib/components/PoliceMap.svelte';
   import BarChart from '$lib/components/BarChart.svelte';
-  import ExplainerScrolly from '$lib/components/ExplainerScrolly.svelte';
   import Transfers from '$lib/components/Transfers.svelte';
   import OfficerTable from '$lib/components/OfficerTable.svelte';
   import Absconded from '$lib/components/Absconded.svelte';
   import TransfersExperiemnt from '$lib/components/TransfersExperiemnt.svelte';
-  import HeroCollage from '$lib/components/HeroCollage.svelte';
   import Navbar from '$lib/components/NavBar.svelte';
   import Headline from '$lib/components/Headline.svelte'; // Your new component
 
@@ -111,6 +109,7 @@
   }
 </style>
 
+<Headline />
 <!-- Accessibility Skip Link -->
 <a href="#main-content" class="skip-to-content">Skip to main content</a>
 

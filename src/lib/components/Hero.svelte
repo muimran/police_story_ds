@@ -11,7 +11,7 @@
   <!-- The logo ribbon has been removed from here -->
 
   <!-- Full-screen background image -->
-  <img src="{base}/images/header.jpeg" alt="An illustration of an eye made of circuitry." class="header-image" />
+  <img src="{base}/images/header.jpg" alt="An illustration of an eye made of circuitry." class="header-image" />
 </div>
   
 <style>
