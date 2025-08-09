@@ -114,6 +114,8 @@
 <!-- ======================= MAIN CONTENT ======================= -->
 <main id="main-content">
   <!-- Text above the Bar Chart -->
+
+  
   <article class="ds-body">
     <p>Meanwhile over at NTMC...</p>
     <p>While Rab and the police were focusing on specific target-based surveillance, NTMC dedicated its efforts to building an Integrated Lawful Interception System, the ultimate manifestation of a surveillance state.</p>
@@ -180,3 +182,6 @@
     <p>It can not, however, breach end-to-end encryption, which is a feature of apps like Signal, so it could not peek into the messages themselves, unless the device itself had spyware like Pegasus installed.</p>
   </article>
 </main>
+
+
+ 
