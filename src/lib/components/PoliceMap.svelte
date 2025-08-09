@@ -18,10 +18,14 @@
     let activeMediaSrc = '';
     let activeMediaLngLat = null;
 
-	const AMMO_COLORS = {
-		t56: '#d7263d', lethal: '#f46a4e', rubber_cartridge: '#0077b6',
-		tear_gas_grenade: '#80b918', baton_rounds: '#fca311', shotgun_shell: '#5e548e',
-		non_lethal: '#48cae4'
+	const AMMO_STYLES = {
+		t56:              { color: '#d7263d', label: 'Type 56',         offset: [0, -3.5] },
+		lethal:           { color: '#f46a4e', label: 'Lethal',          offset: [0, -2.5] },
+		rubber_cartridge: { color: '#0077b6', label: 'Rubber Cartridge',offset: [0, -1.5] },
+		shotgun_shell:    { color: '#5e548e', label: 'Shotgun Shell',   offset: [0, -0.5] },
+		tear_gas_grenade: { color: '#80b918', label: 'Tear Gas',        offset: [0, 0.5]  },
+		baton_rounds:     { color: '#fca311', label: 'Baton Rounds',    offset: [0, 1.5]  },
+		non_lethal:       { color: '#48cae4', label: 'Non-Lethal',      offset: [0, 2.5]  }
 	};
 	
 	$: if (map && map.isStyleLoaded()) { updateMap(activeIndex); }
@@ -38,16 +42,21 @@
     }
 
     function normalizeDate(dateString) {
-        if (!dateString) return '';
+        if (!dateString || typeof dateString !== 'string') return '';
         const parts = dateString.split('/');
-        if (parts.length === 3 && parts[2].length === 2) { return `${parts[0]}/${parts[1]}/20${parts[2]}`; }
+        if (parts.length === 3) {
+            const day = parts[0].padStart(2, '0');
+            const month = parts[1].padStart(2, '0');
+            let year = parts[2];
+            if (year.length === 2) year = `20${year}`;
+            return `${day}/${month}/${year}`;
+        }
         return dateString;
     }
 
 	function updateMap(stepIndex) {
 		if (!chapters || !chapters[stepIndex]) return;
 		const chapter = chapters[stepIndex];
-		console.group(`--- Updating Map for Step ${chapter.sl} (Index: ${stepIndex}) ---`);
 		
 		map.flyTo({ ...chapter.view, duration: 1200, essential: true });
         
@@ -60,19 +69,20 @@
         }
 
 		const features = chapter.layers.map(layer => {
-			const properties = {};
-			Object.keys(AMMO_COLORS).forEach(ammoType => {
+			const properties = {
+                thana: layer.thana,
+                highlight: layer.highlight || false 
+            };
+			Object.keys(AMMO_STYLES).forEach(ammoType => {
 				properties[`${ammoType}_total`] = layer.totals[ammoType] || 0;
 			});
+            properties.has_data = Object.values(layer.totals).some(total => total > 0);
 			return { type: 'Feature', geometry: { type: 'Point', coordinates: layer.coords }, properties };
 		});
 		const geojsonData = { type: 'FeatureCollection', features };
 		
-		console.log('Final GeoJSON for map source:', geojsonData);
-        
-		const source = map.getSource('ammo_circles_source');
+		const source = map.getSource('ammo_data_source');
 		if (source) { source.setData(geojsonData); }
-        console.groupEnd();
 	}
 	
 	onMount(async () => {
@@ -85,69 +95,113 @@
 		const scrollyData = csvParse(scrollyText);
 		const amoData = csvParse(correctedAmoText);
 
-        console.log(`Loaded ${scrollyData.length} steps from scrolly.csv`);
-        console.log(`Loaded ${amoData.length} records from amo_data.csv`);
-
 		const thanaCoords = amoData.reduce((acc, row) => {
 			if (row.thana && !acc[row.thana]) { acc[row.thana] = { lat: +row.lat, lon: +row.lon }; }
 			return acc;
 		}, {});
+
+        const allThanaNames = [...new Set(amoData.map(d => d.thana).filter(Boolean))];
         
 		chapters = scrollyData.map(step => {
-            console.groupCollapsed(`Processing Step ${step.sl}`);
-            console.log('Raw step data:', step);
-
 			const chapter = {
 				sl: step.sl, textbox: step.textbox, view: { center: [+step.lon, +step.lat], zoom: +step.zoom },
                 media_src: step.media_src, media_lnglat: (step.media_lng && step.media_lat) ? [+step.media_lng, +step.media_lat] : null,
 				layers: []
 			};
-			const thanas = (step.thana && step.thana !== "0") ? step.thana.split(',').map(t => t.trim()) : [];
-			const amoTypes = (step.amo_type) ? step.amo_type.split(',').map(t => t.trim()) : [];
-            
-            console.log(`Thanas to process:`, thanas);
-            console.log(`Ammo types to process:`, amoTypes);
-            console.log(`Date to filter by:`, step.date);
 
-			if (thanas.length > 0 && amoTypes.length > 0) {
-				thanas.forEach(thanaName => {
-					if (!thanaCoords[thanaName]) {
-                        console.warn(`Could not find coordinates for thana: "${thanaName}"`);
-                        return;
-                    }
+            let thanasToProcess;
+            if (step.thana === "All") {
+                thanasToProcess = allThanaNames;
+            } else if (step.thana && step.thana !== "0") {
+                thanasToProcess = step.thana.split(',').map(t => t.trim());
+            } else {
+                thanasToProcess = [];
+            }
+
+			const amoTypes = (step.amo_type && step.amo_type !== '0') ? step.amo_type.split(',').map(t => t.trim()) : [];
+            const stepDateNormalized = normalizeDate(step.date);
+
+			if (thanasToProcess.length > 0 && amoTypes.length > 0) {
+                thanasToProcess.forEach(thanaName => {
+					if (!thanaCoords[thanaName]) { return; }
 					const layerData = { thana: thanaName, coords: [thanaCoords[thanaName].lon, thanaCoords[thanaName].lat], totals: {} };
-					const filteredAmo = amoData.filter(d => d.thana === thanaName && normalizeDate(d.date) === step.date);
-                    
-                    console.log(`For thana "${thanaName}" on date "${step.date}", found ${filteredAmo.length} matching records in amo_data.csv.`);
-                    if (filteredAmo.length > 0) {
-                        console.table(filteredAmo);
-                    }
-
+					const filteredAmo = amoData.filter(d => d.thana === thanaName && normalizeDate(d.date) === stepDateNormalized);
 					amoTypes.forEach(type => {
 						layerData.totals[type] = filteredAmo.reduce((sum, row) => {
 							let value = (type === 'rubber_cartridge') ? (Number(row.rubber_cartridge_1) || 0) + (Number(row.rubber_cartridge_2) || 0) : (Number(row[type]) || 0);
 							return sum + value;
 						}, 0);
-                        console.log(`  - Calculated Total for "${type}":`, layerData.totals[type]);
 					});
 					chapter.layers.push(layerData);
 				});
-			}
-            console.groupEnd();
+			} else if (thanasToProcess.length > 0) {
+                thanasToProcess.forEach(thanaName => {
+                    if (!thanaCoords[thanaName]) { return; }
+                    chapter.layers.push({
+                        thana: thanaName,
+                        coords: [thanaCoords[thanaName].lon, thanaCoords[thanaName].lat],
+                        totals: {}, 
+                        highlight: true
+                    });
+                });
+            }
 			return chapter;
 		});
 
 		map = new mapboxgl.Map({ container: mapContainer, style: MAP_STYLE, center: [90.39159, 23.75466], zoom: 11, interactive: false });
 		map.on('load', () => {
-			map.addSource('ammo_circles_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-			Object.keys(AMMO_COLORS).forEach(type => {
+			map.addSource('ammo_data_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+			
+            map.addLayer({
+                id: 'thana-label',
+                type: 'symbol',
+                source: 'ammo_data_source',
+                layout: {
+                    'text-field': ['case', ['any', ['get', 'has_data'], ['get', 'highlight']], ['get', 'thana'], ''],
+                    'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                    'text-size': 14,
+                    'text-offset': [0, -4.5],
+                    'text-anchor': 'left',
+                    'text-allow-overlap': true,
+                },
+                paint: {
+                    'text-color': '#ffffff',
+                    'text-halo-color': 'rgba(0, 0, 0, 0.9)',
+                    'text-halo-width': 2
+                }
+            });
+
+			Object.entries(AMMO_STYLES).forEach(([type, style]) => {
 				map.addLayer({
-					id: `ammo-circle-${type}`, type: 'circle', source: 'ammo_circles_source',
+					id: `ammo-circle-${type}`, type: 'circle', source: 'ammo_data_source',
 					paint: {
-						'circle-color': AMMO_COLORS[type],
-						'circle-radius': ['interpolate',['linear'],['sqrt', ['get', `${type}_total`]],0,0,1,5,100,20,1000,50,10000,150],
+						'circle-color': style.color,
+						// --- THIS IS THE MODIFIED LINE FOR LARGER CIRCLES ---
+						'circle-radius': ['interpolate',['linear'],['sqrt', ['get', `${type}_total`]],0,0,1,8,100,30,1000,75,10000,225],
 						'circle-opacity': 0.7, 'circle-stroke-color': 'white', 'circle-stroke-width': 1,
 						'circle-stroke-opacity': ['case', ['>', ['get', `${type}_total`], 0], 1, 0]
+					}
+				});
+
+				map.addLayer({
+					id: `ammo-label-${type}`, type: 'symbol', source: 'ammo_data_source',
+					layout: {
+						'text-field': [
+							'case',
+							['>', ['get', `${type}_total`], 0],
+							['format', style.label, {}, ': ', {}, ['get', `${type}_total`], {}],
+							''
+						],
+						'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+						'text-size': 12,
+						'text-offset': style.offset,
+						'text-anchor': 'left',
+						'text-allow-overlap': true
+					},
+					paint: {
+						'text-color': style.color,
+						'text-halo-color': 'rgba(0, 0, 0, 0.85)',
+						'text-halo-width': 1.5
 					}
 				});
 			});
@@ -189,9 +243,9 @@
     <GifOverlay map={map} isActive={!!activeMediaSrc} mediaSrc={activeMediaSrc} lngLat={activeMediaLngLat}/>
 	<div class="scrolly-steps">
 		{#each chapters as chapter, i}
-			<div class="scrolly-step">
+			<div class="scrolly-step" data-index={i}>
 				<div class="step-content">
-					<p>{chapter.textbox}</p>
+					{@html chapter.textbox}
 				</div>
 			</div>
 		{/each}
