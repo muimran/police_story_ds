@@ -1,7 +1,7 @@
 <!-- src/routes/+layout.svelte -->
 <script>
   // 1. Import your Navbar component
-  import Navbar from '$lib/components/Navbar.svelte';
+  import Navbar from '$lib/components/NavBar.svelte';
 
   // Keep any global CSS imports
   import 'mapbox-gl/dist/mapbox-gl.css';
