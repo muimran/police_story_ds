@@ -53,19 +53,24 @@
 	}
 
 	$: if (chapters.length > 0 && map?.isStyleLoaded()) {
-		const newLayerData = chapters[activeIndex].layers;
-		if (isInitialLoad) { displayedLayerData = newLayerData; isInitialLoad = false; } else {
+		// This block now primarily handles updates after the initial load
+		if (isInitialLoad) {
+			// The initial load is now handled in map.on('load')
+		} else {
+			// For subsequent steps, run the update logic
 			tableVisible = false;
-			setTimeout(() => { displayedLayerData = newLayerData; tableVisible = true; }, 250);
+			setTimeout(() => {
+				displayedLayerData = chapters[activeIndex].layers;
+				tableVisible = true;
+			}, 250);
+			updateMap(activeIndex);
 		}
-		updateMap(activeIndex);
 	}
 
 	onMount(async () => {
 		const observer = new IntersectionObserver(([entry]) => {
 			isVisible = entry.isIntersecting;
 		}, {
-			// A slightly adjusted margin to make the transition feel right
 			rootMargin: "0px 0px -15% 0px",
 			threshold: 0
 		});
@@ -74,7 +79,6 @@
 			observer.observe(graphicContainer);
 		}
 
-		// --- Rest of onMount is unchanged ---
 		const [scrollyRes, amoRes] = await Promise.all([ fetch(`${base}/scrolly.csv`), fetch(`${base}/amo_data.csv`) ]);
 		const scrollyText = await scrollyRes.text();
 		const amoText = await amoRes.text();
@@ -86,8 +90,27 @@
 		const thanaCoords = amoData.reduce((acc, row) => { if (row.thana && !acc[row.thana]) { acc[row.thana] = { lat: +row.lat, lon: +row.lon }; } return acc; }, {});
 		const allThanaNames = [...new Set(amoData.map(d => d.thana).filter(Boolean))];
 		chapters = scrollyData.map(step => { const chapter = { sl: step.sl, textbox: step.textbox, view: { center: [+step.lon, +step.lat], zoom: +step.zoom }, media_src: step.media_src, media_lnglat: (step.media_lng && step.media_lat) ? [+step.media_lng, +step.media_lat] : null, layers: [] }; let thanasToProcess; if (step.thana === "All") { thanasToProcess = allThanaNames; } else if (step.thana && step.thana !== "0") { thanasToProcess = step.thana.split(',').map(t => t.trim()); } else { thanasToProcess = []; } const amoTypes = (step.amo_type && step.amo_type !== '0') ? step.amo_type.split(',').map(t => t.trim()) : []; const stepDateNormalized = normalizeDate(step.date); if (thanasToProcess.length > 0 && amoTypes.length > 0) { thanasToProcess.forEach(thanaName => { if (!thanaCoords[thanaName]) { return; } const layerData = { thana: thanaName, coords: [thanaCoords[thanaName].lon, thanaCoords[thanaName].lat], totals: {} }; const filteredAmo = amoData.filter(d => d.thana === thanaName && normalizeDate(d.date) === stepDateNormalized); amoTypes.forEach(type => { layerData.totals[type] = filteredAmo.reduce((sum, row) => { let value = (type === 'rubber_cartridge') ? (Number(row.rubber_cartridge_1) || 0) + (Number(row.rubber_cartridge_2) || 0) : (Number(row[type]) || 0); return sum + value; }, 0); }); chapter.layers.push(layerData); }); } else if (thanasToProcess.length > 0) { thanasToProcess.forEach(thanaName => { if (!thanaCoords[thanaName]) { return; } chapter.layers.push({ thana: thanaName, coords: [thanaCoords[thanaName].lon, thanaCoords[thanaName].lat], totals: {}, highlight: true }); }); } return chapter; });
-		map = new mapboxgl.Map({ container: mapContainer, style: MAP_STYLE, center: [90.39159, 23.75466], zoom: 11, interactive: false });
-		map.on('load', () => { map.addSource('ammo_data_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } }); map.addLayer({ id: 'thana-label', type: 'symbol', source: 'ammo_data_source', layout: { 'text-field': ['case', ['any', ['get', 'has_data'], ['get', 'highlight']], ['get', 'thana'], ''], 'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'], 'text-size': 14, 'text-offset': ['get', 'labelOffset'], 'text-anchor': ['get', 'labelAnchor'], 'text-allow-overlap': true, 'text-ignore-placement': true }, paint: { 'text-color': '#ffffff', 'text-halo-color': 'rgba(0, 0, 0, 0.9)', 'text-halo-width': 2 } }); Object.entries(AMMO_STYLES).forEach(([type, style]) => { map.addLayer({ id: `ammo-circle-${type}`, type: 'circle', source: 'ammo_data_source', paint: { 'circle-color': style.color, 'circle-radius': ['interpolate',['linear'],['sqrt', ['get', `${type}_total`]],0,0,1,8,100,30,1000,75,10000,225], 'circle-opacity': 0.7, 'circle-stroke-color': 'white', 'circle-stroke-width': 1, 'circle-stroke-opacity': ['case', ['>', ['get', `${type}_total`], 0], 1, 0] } }); }); map.on('moveend', () => { if (chapters[activeIndex]) { updateMap(activeIndex); } }); });
+		
+        map = new mapboxgl.Map({ container: mapContainer, style: MAP_STYLE, center: [90.39159, 23.75466], zoom: 11, interactive: false });
+		
+        map.on('load', () => {
+			map.addSource('ammo_data_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+			map.addLayer({ id: 'thana-label', type: 'symbol', source: 'ammo_data_source', layout: { 'text-field': ['case', ['any', ['get', 'has_data'], ['get', 'highlight']], ['get', 'thana'], ''], 'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'], 'text-size': 14, 'text-offset': ['get', 'labelOffset'], 'text-anchor': ['get', 'labelAnchor'], 'text-allow-overlap': true, 'text-ignore-placement': true }, paint: { 'text-color': '#ffffff', 'text-halo-color': 'rgba(0, 0, 0, 0.9)', 'text-halo-width': 2 } });
+			Object.entries(AMMO_STYLES).forEach(([type, style]) => { map.addLayer({ id: `ammo-circle-${type}`, type: 'circle', source: 'ammo_data_source', paint: { 'circle-color': style.color, 'circle-radius': ['interpolate',['linear'],['sqrt', ['get', `${type}_total`]],0,0,1,8,100,30,1000,75,10000,225], 'circle-opacity': 0.7, 'circle-stroke-color': 'white', 'circle-stroke-width': 1, 'circle-stroke-opacity': ['case', ['>', ['get', `${type}_total`], 0], 1, 0] } }); });
+			
+            // --- FIX APPLIED HERE ---
+            // Manually trigger the state for the first step after the map loads.
+            // This ensures the initial view is set correctly.
+            if (chapters.length > 0) {
+                displayedLayerData = chapters[0].layers;
+                isInitialLoad = false; // We've handled the initial load now
+                updateMap(0);
+            }
+            // --- END OF FIX ---
+
+            map.on('moveend', () => { if (chapters[activeIndex]) { updateMap(activeIndex); } });
+		});
+
 		await tick();
 		scroller = scrollama();
 		scroller.setup({ step: '.scrolly-step', offset: 0.6, progress: true, debug: false }).onStepEnter(handleStepEnter).onStepProgress(handleStepProgress);
@@ -126,7 +149,6 @@
         </div>
     </div>
 
-    <!-- CHANGE 1: Use `class:visible` instead of `{#if}` -->
     <div class="legend-container" class:visible={isVisible}>
         <div class="legend-table-wrapper" style="opacity: {tableVisible ? .8 : 0};">
             {#if activeAmmoTypesInStep.length > 0}
@@ -184,7 +206,7 @@
     .gradient-top { top: 0; height: 8%; background: linear-gradient(to bottom, white 0%, transparent 100%); }
     .gradient-bottom { bottom: 0; height: 8%; background: linear-gradient(to top, white 0%, transparent 100%); }
 
-    /* --- CHANGE 2: Add smooth transitions with CSS --- */
+    /* --- Legend Styles --- */
     .legend-container {
         position: fixed;
         top: 8rem;
@@ -193,16 +215,11 @@
         max-width: 45vw;
         max-height: calc(100vh - 4rem);
         display: flex;
-
-        /* Start hidden */
         opacity: 0;
-        /* Prevent clicks when hidden */
         pointer-events: none;
-        /* Define the smooth fade */
         transition: opacity 0.3s ease-in-out;
     }
 
-    /* When the .visible class is added, it becomes visible */
     .legend-container.visible {
         opacity: 1;
         pointer-events: auto;
@@ -214,10 +231,9 @@
         border-radius: 6px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0,0,0,0.1);
         border: 1px solid #e0e0e0;
-        /* This transition is for the step changes */
         transition: opacity 0.25s ease-in-out;
     }
-    /* ... The rest of your table styles are unchanged ... */
+    
     .legend-table {
         border-collapse: collapse;
         width: 100%;
