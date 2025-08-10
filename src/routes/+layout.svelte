@@ -33,6 +33,7 @@
     padding: 0;
   }
 
+
   main {
     /* Since the Navbar is position:absolute, it doesn't take up space.
        The content inside <main> will start at the very top of the page,

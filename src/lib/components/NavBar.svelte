@@ -22,6 +22,7 @@
     justify-content: flex-start;
 
     padding: 2rem;
+    box-sizing: border-box; 
   }
 
   /* --- THIS IS THE SECTION TO EDIT --- */
