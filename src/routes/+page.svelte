@@ -6,6 +6,7 @@
   import TransfersExperiemnt from '$lib/components/TransfersExperiemnt.svelte';
   import Navbar from '$lib/components/NavBar.svelte';
   import Hero from '$lib/components/Hero.svelte'; // Your new component
+  import PoliceMapMobile from '$lib/components/PoliceMapSave.svelte';
 
   import { page } from '$app/stores';
 	import Headline from '$lib/components/Headline.svelte';

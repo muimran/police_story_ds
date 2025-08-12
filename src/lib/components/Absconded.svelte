@@ -20,11 +20,11 @@
 	// --- 2. CONFIGURATION & HELPERS ---
 	const rankColors = {
 		'Additional Deputy Police Commissioner': '#4E79A7',
-		'Additional Police Commissioner': '#BAB0AC',
+		'Additional Police Commissioner': '#fdba74',
 		'Assistant Police Commissioner': '#4E79A7',
-		'Deputy Police Commissioner': '#4E79A7',
-		'Joint Police Commissioner': '#BAB0AC',
-		'Police Commissioner': '#BAB0AC'
+		'Deputy Police Commissioner': '#fdba74',
+		'Joint Police Commissioner': '#fdba74',
+		'Police Commissioner': '#fdba74'
 	};
 
 	function getStartOfWeek(date) {
@@ -51,7 +51,7 @@
 			day: 'numeric'
 		});
 	}
-	
+
 	// --- REUSABLE TOOLTIP LOGIC ---
 	function showTooltip(event, officer) {
 		clearTimeout(timeoutId);
@@ -72,18 +72,18 @@
 
 	function hideTooltip() {
 		timeoutId = setTimeout(() => {
-			if (activeOfficerId === null) { // Only hide if not actively tapped
+			if (activeOfficerId === null) {
+				// Only hide if not actively tapped
 				tooltipWrapper.style.visibility = 'hidden';
 			}
 		}, 100);
 	}
 
-
 	// --- Tooltip Handlers for DESKTOP (HOVER) and MOBILE (TAP) ---
 	onMount(() => {
 		// Detect if it's a touch device
 		isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-		
+
 		tooltipWrapper = document.createElement('div');
 		tooltipWrapper.className = 'tooltip-container';
 		document.body.appendChild(tooltipWrapper);
@@ -112,7 +112,7 @@
 		if (isTouchDevice) return; // Do nothing on touch devices
 		hideTooltip();
 	}
-	
+
 	// For mobile tap
 	function handleDotClick(event, officer) {
 		if (!isTouchDevice) return; // Do nothing on non-touch devices
@@ -136,7 +136,6 @@
 			tooltipWrapper.style.visibility = 'hidden';
 		}
 	}
-
 
 	function handleMouseMove(event) {
 		if (isTouchDevice) return;
@@ -240,6 +239,16 @@
 </script>
 
 <div class="timeline-container">
+	<!-- Title and Caption -->
+	<h2 class="chart-title">A Timeline of Fleeing Officials</h2>
+	<p class="chart-caption">
+		Each dot represents an official who has fled.
+		<span class="legend-item"><span class="legend-dot" style="background-color: #fdba74;"></span
+			>Top-Ranked</span>
+		<span class="legend-item"><span class="legend-dot" style="background-color: #4E79A7;"></span
+			>Other Ranks</span>
+	</p>
+
 	{#if isLoading}
 		<p>Loading timeline...</p>
 	{:else if error}
@@ -261,6 +270,38 @@
 					{/each}
 				</div>
 			{/each}
+
+			<!-- MODIFIED ANNOTATION -->
+			<div class="annotation" style="left: 27%; top: -10px;">
+				<div class="annotation-content">
+					<div class="annotation-text" style="padding-left: 10px;">
+						Most top-ranked<br />officials fled on<br />August 6
+					</div>
+					<svg width="50" height="50" viewBox="0 0 50 50" class="annotation-arrow">
+						<defs>
+							<marker
+								id="arrowhead"
+								viewBox="0 0 10 10"
+								refX="5"
+								refY="5"
+								markerWidth="6"
+								markerHeight="6"
+								orient="auto-start-reverse"
+								fill="black"
+							>
+								<path d="M 0 0 L 10 5 L 0 10 z" />
+							</marker>
+						</defs>
+						<path
+							d="M 48 2 C 40 20, 20 35, 5 45"
+							stroke="black"
+							stroke-width="1.5"
+							fill="none"
+							marker-end="url(#arrowhead)"
+						/>
+					</svg>
+				</div>
+			</div>
 		</div>
 		<div class="axis">
 			<div class="axis-line"></div>
@@ -292,14 +333,14 @@
 		white-space: nowrap;
 		background-color: #fff;
 		border-radius: 6px;
-		box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+		box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 		overflow: hidden;
 		border: 1px solid #e2e8f0;
 		color: #333;
 	}
 
 	:global(.tooltip-header) {
-		background-color: #2D3748;
+		background-color: #2d3748;
 		color: #fff;
 		padding: 5px 12px;
 		font-weight: bold;
@@ -317,7 +358,7 @@
 		border-radius: 50%;
 		object-fit: cover;
 		border: 3px solid white;
-		box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 		background-color: #f0f0f0;
 		display: none;
 	}
@@ -328,6 +369,7 @@
 		padding: 0 20px;
 		box-sizing: border-box;
 		transition: padding 0.3s ease;
+		font-family: 'Georgia', serif;
 	}
 
 	.chart {
@@ -336,6 +378,68 @@
 		margin-bottom: 10px;
 		transition: height 0.3s ease;
 	}
+
+	/* --- Title, Caption, Annotations Styles --- */
+	.chart-title {
+		text-align: center;
+		font-size: 1.6rem;
+		font-weight: 500;
+		color: #2d3748;
+		margin-bottom: 0.5rem;
+	}
+
+	.chart-caption {
+		text-align: center;
+		font-size: 0.95rem;
+		color: #4a5568;
+		margin-bottom: 3rem;
+		line-height: 1.5;
+	}
+
+	.legend-item {
+		display: inline-flex;
+		align-items: center;
+		margin: 0 10px;
+		white-space: nowrap;
+	}
+
+	.legend-dot {
+		display: inline-block;
+		width: 11px;
+		height: 11px;
+		border-radius: 50%;
+		margin-right: 6px;
+		border: 1px solid rgba(0, 0, 0, 0.2);
+	}
+
+	.annotation {
+		position: absolute;
+		z-index: 5;
+		pointer-events: none;
+		display: flex;
+		align-items: flex-start;
+	}
+
+	.annotation-content {
+		position: relative;
+		/* MODIFIED: Changed alignment */
+		text-align: left;
+	}
+
+	.annotation-text {
+		font-family: 'Georgia', serif;
+		font-size: 0.85rem;
+		line-height: 1.4;
+		color: #333;
+	}
+
+	.annotation-arrow {
+		position: absolute;
+		top: 25px;
+		/* MODIFIED: Positioned from the left */
+		left: -25px;
+	}
+	/* --- END NEW STYLES --- */
 
 	.week-column {
 		position: absolute;
@@ -405,7 +509,7 @@
 
 	@media (max-width: 768px) {
 		.chart {
-			height: 150px;
+			height: 200px;
 		}
 		.dot {
 			width: 10px;
@@ -417,6 +521,13 @@
 		}
 		.axis-text {
 			font-size: 0.75rem;
+		}
+		.chart-title {
+			font-size: 1.2rem;
+		}
+		.chart-caption,
+		.annotation-text {
+			font-size: 0.8rem;
 		}
 	}
 </style>
