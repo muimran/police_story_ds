@@ -10,6 +10,7 @@
 	let renderedTransfers = [];
 	let boundingCircles = [];
 	let attachmentBoundingCircles = [];
+	let rankBoundingCircles = [];
 	let activeStep = 0;
 
 	// --- Tooltip State (Manual DOM method) ---
@@ -18,7 +19,10 @@
 	// --- Chart Configuration ---
 	const width = 500;
 	const height = 500;
-	const dotRadius = 6;
+	let dynamicDotRadius = 6;
+	const mobileBreakpoint = 820;
+	// NEW: Dynamic variable for label position
+	let labelXPosition = width * 0.65;
 
 	// --- Scrollytelling Data ---
 	const steps = [
@@ -32,7 +36,7 @@
 		},
 		{
 			title: 'A Split in Command',
-			description: 'Among them, 64 held the rank of Deputy Commissioner (DC) or above (orange), while the remaining 172 were ranked AC or ADC (blue).'
+			description: 'Among them, 64 were <span style="background-color: #fdba74; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">higher ranking</span> officials (Deputy Commissioner or above), while the <span style="background-color: #4E79A7; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">remaining 172</span> were ranked AC or ADC.'
 		},
 		{
 			title: 'Destinations of Transfers',
@@ -104,103 +108,93 @@
 		const response = await fetch(`${base}/transfers.csv`);
 		const rawData = csvParse(await response.text());
 		let data = rawData.map(d => ({ ...d, attachment: +d.attachment, faded: false }));
-
-		// Layout 1: Single Cluster
-		const sim1 = forceSimulation(data).force('x', forceX(width / 2).strength(0.05)).force('y', forceY(height / 2).strength(0.05)).force('collide', forceCollide(dotRadius + 1.5)).stop();
-		for (let i = 0; i < 200; ++i) sim1.tick();
-		data.forEach(d => { d.x1 = d.x; d.y1 = d.y; });
-
-		const transferredData = data.filter(d => d.status === 'transferred');
-		
-		// Layout 2: Split by Rank Level
-		const sim2 = forceSimulation(transferredData)
-			.force('x', forceX(d => d.rank_level === 'High' ? width * 0.2 : width * 0.65).strength(0.1))
-			.force('y', forceY(height / 2).strength(0.1)) // Matched strength for circular clusters
-			.force('collide', forceCollide(dotRadius + 1.5)).stop();
-		for (let i = 0; i < 200; ++i) sim2.tick();
-		const rankPositionMap = new Map(transferredData.map(d => [d.id, { x: d.x, y: d.y }]));
-		data.forEach(d => {
-			d.x2 = rankPositionMap.has(d.id) ? rankPositionMap.get(d.id).x : d.x1;
-			d.y2 = rankPositionMap.has(d.id) ? rankPositionMap.get(d.id).y : d.y1;
-		});
-
-		// --- FIX: RESTORED THE CODE FOR SIMULATION 3 ---
-		// Layout 3: Split by Destination Cluster
-		const clusterPositions = {
-			'Specialized Operational Units': { x: width * 0.25, y: height * 0.3 },
-			'Training & Development': { x: width * 0.75, y: height * 0.3 },
-			'Central & Regional Administration': { x: width * 0.25, y: height * 0.75 },
-			'Geographic Field Commands': { x: width * 0.75, y: height * 0.75 },
-			'Investigation & Intelligence': { x: width * 0.5, y: height * 0.55 }
-		};
-		const defaultPos = { x: width / 2, y: height / 2 };
-		const sim3 = forceSimulation(transferredData)
-			.force('x', forceX(d => (clusterPositions[d.destination_cluster] || defaultPos).x).strength(0.4))
-			.force('y', forceY(d => (clusterPositions[d.destination_cluster] || defaultPos).y).strength(0.4))
-			.force('collide', forceCollide(dotRadius + 2)).stop();
-		for (let i = 0; i < 200; ++i) sim3.tick();
-		const clusterPositionMap = new Map(transferredData.map(d => [d.id, { x: d.x, y: d.y }]));
-		data.forEach(d => {
-			d.x3 = clusterPositionMap.has(d.id) ? clusterPositionMap.get(d.id).x : d.x2;
-			d.y3 = clusterPositionMap.has(d.id) ? clusterPositionMap.get(d.id).y : d.y2;
-		});
-
-		// Layout 4: Split by Attachment
-		const sim4 = forceSimulation(transferredData)
-			.force('x', forceX(d => (d.attachment === 1 ? width * 0.25 : width * 0.75)).strength(0.1))
-			.force('y', forceY(height / 2).strength(0.1)) // Matched strength for circular clusters
-			.force('collide', forceCollide(dotRadius + 1.5))
-			.stop();
-		for (let i = 0; i < 200; ++i) sim4.tick();
-		const attachmentPositionMap = new Map(transferredData.map(d => [d.id, { x: d.x, y: d.y }]));
-		data.forEach(d => {
-			d.x4 = attachmentPositionMap.has(d.id) ? attachmentPositionMap.get(d.id).x : d.x3;
-			d.y4 = attachmentPositionMap.has(d.id) ? attachmentPositionMap.get(d.id).y : d.y3;
-		});
 		
 		const distance = (p1, p2) => Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
 
-		// --- FIX: RESTORED THE CODE FOR DESTINATION GROUPING & CIRCLES ---
-		// Bounding Circles for Step 3 (Destinations)
-		const destinationGroups = transferredData.reduce((acc, d) => {
-			const key = d.destination_cluster;
-			if (!acc[key]) acc[key] = [];
-			acc[key].push(d);
-			return acc;
-		}, {});
-		boundingCircles = Object.values(destinationGroups).map(group => {
-			if (group.length === 0) return null;
-			const { x: targetX, y: targetY } = clusterPositions[group[0].destination_cluster] || defaultPos;
-			let maxDist = 0;
-			group.forEach(d => {
-				const pos = {x: d.x3, y: d.y3};
-				const dist = distance(pos, { x: targetX, y: targetY });
-				if (dist > maxDist) maxDist = dist;
-			});
-			const radius = maxDist + dotRadius * 2;
-			return { 
-				cx: targetX, cy: targetY, r: radius, key: group[0].destination_cluster,
-				circumference: 2 * Math.PI * radius
-			};
-		}).filter(Boolean);
+		const desktopClusterPositions = {
+			'Specialized Operational Units':     { x: 160, y: 0 },
+			'Training & Development':            { x: 165, y: 190 },
+			'Central & Regional Administration': { x: 160, y: 330 },
+			'Investigation & Intelligence':      { x: 160, y: 450 },
+			'Geographic Field Commands':         { x: 160, y: 550 }
+		};
 
-		// Bounding Circles for Step 4 (Attachment)
-		const attachmentGroups = { '1': transferredData.filter(d => d.attachment === 1), '0': transferredData.filter(d => d.attachment === 0) };
-		const attachmentClusterCenters = { '1': { x: width * 0.25, y: height / 2, key: 'Attached' }, '0': { x: width * 0.75, y: height / 2, key: 'Not Attached' } };
-		attachmentBoundingCircles = Object.entries(attachmentGroups).map(([key, group]) => {
-			if (group.length === 0) return null;
-			const center = attachmentClusterCenters[key];
-			let maxDist = 0;
-			group.forEach(d => {
-				const pos = { x: d.x4, y: d.y4 };
-				const dist = distance(pos, center);
-				if (dist > maxDist) maxDist = dist;
-			});
-			const radius = maxDist + dotRadius * 2;
-			return { cx: center.x, cy: center.y, r: radius, key: center.key, circumference: 2 * Math.PI * radius };
-		}).filter(Boolean);
+		const mobileClusterPositions = {
+			'Specialized Operational Units':     { x: 160, y: 75 },
+			'Training & Development':            { x: 165, y: 220 },
+			'Central & Regional Administration': { x: 160, y: 330 },
+			'Investigation & Intelligence':      { x: 160, y: 420 },
+			'Geographic Field Commands':         { x: 160, y: 495 }
+		};
 
-		allTransfers = data;
+		function runAllSimulations() {
+			const isMobile = window.innerWidth <= mobileBreakpoint;
+			const activeClusterPositions = isMobile ? mobileClusterPositions : desktopClusterPositions;
+			const transferredData = data.filter(d => d.status === 'transferred');
+
+			const sim1 = forceSimulation(data).force('x', forceX(width / 2).strength(0.05)).force('y', forceY(height / 2).strength(0.05)).force('collide', forceCollide(dynamicDotRadius + 1.5)).stop();
+			for (let i = 0; i < 200; ++i) sim1.tick();
+			data.forEach(d => { d.x1 = d.x; d.y1 = d.y; });
+
+			const sim2 = forceSimulation(transferredData).force('x', forceX(d => d.rank_level === 'High' ? width * 0.2 : width * 0.65).strength(0.3)).force('y', forceY(height / 2).strength(0.3)).force('collide', forceCollide(dynamicDotRadius + 1.5)).stop();
+			for (let i = 0; i < 200; ++i) sim2.tick();
+			const rankPositionMap = new Map(transferredData.map(d => [d.id, { x: d.x, y: d.y }]));
+			data.forEach(d => { d.x2 = rankPositionMap.has(d.id) ? rankPositionMap.get(d.id).x : d.x1; d.y2 = rankPositionMap.has(d.id) ? rankPositionMap.get(d.id).y : d.y1; });
+
+			const defaultPos = { x: width / 2, y: height / 2 };
+			const sim3 = forceSimulation(transferredData).force('x', forceX(d => (activeClusterPositions[d.destination_cluster] || defaultPos).x).strength(0.4)).force('y', forceY(d => (activeClusterPositions[d.destination_cluster] || defaultPos).y).strength(0.4)).force('collide', forceCollide(dynamicDotRadius + 2)).stop();
+			for (let i = 0; i < 200; ++i) sim3.tick();
+			const clusterPositionMap = new Map(transferredData.map(d => [d.id, { x: d.x, y: d.y }]));
+			data.forEach(d => { d.x3 = clusterPositionMap.has(d.id) ? clusterPositionMap.get(d.id).x : d.x2; d.y3 = clusterPositionMap.has(d.id) ? clusterPositionMap.get(d.id).y : d.y2; });
+
+			const sim4 = forceSimulation(transferredData).force('x', forceX(d => (d.attachment === 1 ? width * 0.25 : width * 0.75)).strength(0.1)).force('y', forceY(height / 2).strength(0.1)).force('collide', forceCollide(dynamicDotRadius + 1.5)).stop();
+			for (let i = 0; i < 200; ++i) sim4.tick();
+			const attachmentPositionMap = new Map(transferredData.map(d => [d.id, { x: d.x, y: d.y }]));
+			data.forEach(d => { d.x4 = attachmentPositionMap.has(d.id) ? attachmentPositionMap.get(d.id).x : d.x3; d.y4 = attachmentPositionMap.has(d.id) ? attachmentPositionMap.get(d.id).y : d.y3; });
+
+			const rankGroups = { 'High': transferredData.filter(d => d.rank_level === 'High'), 'Low': transferredData.filter(d => d.rank_level !== 'High') };
+			const rankClusterCenters = { 'High': { x: width * 0.2, y: height / 2, key: 'High Rank' }, 'Low': { x: width * 0.65, y: height / 2, key: 'Low Rank' } };
+			rankBoundingCircles = Object.entries(rankGroups).map(([key, group]) => {
+				if (group.length === 0) return null;
+				const center = rankClusterCenters[key];
+				let maxDist = 0;
+				group.forEach(d => { const pos = { x: d.x2, y: d.y2 }; const dist = distance(pos, center); if (dist > maxDist) maxDist = dist; });
+				const radius = maxDist + dynamicDotRadius * 2;
+				return { cx: center.x, cy: center.y, r: radius, key: center.key, circumference: 2 * Math.PI * radius };
+			}).filter(Boolean);
+
+			const destinationGroups = transferredData.reduce((acc, d) => { const key = d.destination_cluster; if (!acc[key]) acc[key] = []; acc[key].push(d); return acc; }, {});
+			boundingCircles = Object.values(destinationGroups).map(group => {
+				if (group.length === 0) return null;
+				const { x: targetX, y: targetY } = activeClusterPositions[group[0].destination_cluster] || defaultPos;
+				let maxDist = 0;
+				group.forEach(d => { const pos = {x: d.x3, y: d.y3}; const dist = distance(pos, { x: targetX, y: targetY }); if (dist > maxDist) maxDist = dist; });
+				const radius = maxDist + dynamicDotRadius * 2;
+				return { cx: targetX, cy: targetY, r: radius, key: group[0].destination_cluster, circumference: 2 * Math.PI * radius };
+			}).filter(Boolean);
+
+			const attachmentGroups = { '1': transferredData.filter(d => d.attachment === 1), '0': transferredData.filter(d => d.attachment === 0) };
+			const attachmentClusterCenters = { '1': { x: width * 0.25, y: height / 2, key: 'Attached' }, '0': { x: width * 0.75, y: height / 2, key: 'Others' } };
+			attachmentBoundingCircles = Object.entries(attachmentGroups).map(([key, group]) => {
+				if (group.length === 0) return null;
+				const center = attachmentClusterCenters[key];
+				let maxDist = 0;
+				group.forEach(d => { const pos = { x: d.x4, y: d.y4 }; const dist = distance(pos, center); if (dist > maxDist) maxDist = dist; });
+				const radius = maxDist + dynamicDotRadius * 2;
+				return { cx: center.x, cy: center.y, r: radius, key: center.key, circumference: 2 * Math.PI * radius };
+			}).filter(Boolean);
+			
+			allTransfers = [...data];
+		}
+
+		const mediaQuery = window.matchMedia(`(max-width: ${mobileBreakpoint}px)`);
+		function handleScreenChange(e) {
+			dynamicDotRadius = e.matches ? 4 : 6;
+			labelXPosition = e.matches ? width * 0.55 : width * 0.65;
+			runAllSimulations();
+		}
+		mediaQuery.addEventListener('change', handleScreenChange);
+		handleScreenChange(mediaQuery);
 
 		const scroller = scrollama();
 		scroller.setup({ step: '.step', offset: 0.6, debug: false }).onStepEnter(response => { activeStep = Math.min(response.index, steps.length - 1); });
@@ -208,6 +202,7 @@
 		
 		return () => { 
 			window.removeEventListener('resize', scroller.resize);
+			mediaQuery.removeEventListener('change', handleScreenChange);
 			if (tooltipElement) {
 				document.body.removeChild(tooltipElement);
 			}
@@ -221,7 +216,7 @@
 			<div class="step" data-step-id={i}>
 				<div class="step-content">
 					<h3>{step.title}</h3>
-					<p>{step.description}</p>
+					<p>{@html step.description}</p>
 				</div>
 			</div>
 		{/each}
@@ -229,33 +224,64 @@
 	</div>
 
 	<div class="scrolly-graphic">
-		<div class="chart-wrapper" style="max-width: {width}px;">
-			<svg {width} {height}>
+		<div class="chart-wrapper">
+			<svg {width} {height} viewBox="0 0 {width} {height}">
+				{#if activeStep === 2}
+					<g class="bounding-circles-group">
+						{#each rankBoundingCircles as circle (circle.key)}
+							<circle cx={circle.cx} cy={circle.cy} r={circle.r} class="bounding-circle" style="stroke-dasharray: {circle.circumference}; stroke-dashoffset: {circle.circumference};" />
+						{/each}
+					</g>
+				{/if}
 				{#if activeStep === 3}
-					<g class="bounding-circles">
+					<g class="bounding-circles-group">
 						{#each boundingCircles as circle (circle.key)}
-							<circle cx={circle.cx} cy={circle.cy} r={circle.r} class="bounding-circle" style="stroke-dasharray: {circle.circumference}; stroke-dashoffset: {circle.circumference};"/>
+							<circle cx={circle.cx} cy={circle.cy} r={circle.r} class="bounding-circle" style="stroke-dasharray: {circle.circumference}; stroke-dashoffset: {circle.circumference};" />
+							<text x={labelXPosition} y={circle.cy} class="cluster-label" dominant-baseline="middle">{circle.key}</text>
 						{/each}
 					</g>
 				{/if}
 				{#if activeStep === 4}
-					<g class="bounding-circles">
+					<g class="bounding-circles-group">
 						{#each attachmentBoundingCircles as circle (circle.key)}
-							<circle cx={circle.cx} cy={circle.cy} r={circle.r} class="bounding-circle" style="stroke-dasharray: {circle.circumference}; stroke-dashoffset: {circle.circumference};"/>
+							{@const lineY1 = circle.cy + circle.r + 10}
+							{@const lineY2 = lineY1 + 50}
+							{@const labelY = lineY2 + 20}
+
+							<circle 
+								cx={circle.cx} 
+								cy={circle.cy} 
+								r={circle.r} 
+								class="bounding-circle" 
+								style="stroke-dasharray: {circle.circumference}; stroke-dashoffset: {circle.circumference};"
+							/>
+							
+							<line 
+								x1={circle.cx} 
+								y1={lineY1} 
+								x2={circle.cx} 
+								y2={lineY2} 
+								class="cluster-connector-line"
+							/>
+
+							<text 
+								x={circle.cx} 
+								y={labelY} 
+								class="cluster-label" 
+								text-anchor="middle"
+							>
+								{circle.key}
+							</text>
 						{/each}
 					</g>
 				{/if}
 				<g class="dots">
 					{#each renderedTransfers as d (d.id)}
 						<circle
-							r={dotRadius}
+							r={dynamicDotRadius}
 							fill={getColor(d)}
 							class:faded={d.faded}
-							style="transform: translate({
-								activeStep < 2 ? d.x1 : (activeStep === 2 ? d.x2 : (activeStep === 3 ? d.x3 : d.x4))
-							}px, {
-								activeStep < 2 ? d.y1 : (activeStep === 2 ? d.y2 : (activeStep === 3 ? d.y3 : d.y4))
-							}px);"
+							style="transform: translate({ activeStep < 2 ? d.x1 : (activeStep === 2 ? d.x2 : (activeStep === 3 ? d.x3 : d.x4)) }px, { activeStep < 2 ? d.y1 : (activeStep === 2 ? d.y2 : (activeStep === 3 ? d.y3 : d.y4)) }px);"
 							on:mouseover={(e) => showTooltip(e, d)}
 							on:mouseout={hideTooltip}
 							on:focus={(e) => showTooltip(e, d)}
@@ -271,20 +297,57 @@
 </div>
 
 <style>
+	/* --- Keyframe Animations --- */
 	@keyframes draw-circle {
 		to {
 			stroke-dashoffset: 0;
 		}
 	}
 
-	.bounding-circle {
-		fill: none;
-		stroke: #d1d5db;
-		stroke-width: 2px;
-		stroke-dasharray: 4 4;
-		animation: draw-circle 0.9s ease-out forwards;
+	@keyframes fade-in {
+		to {
+			opacity: 1;
+		}
 	}
 
+	/* --- SVG Element Styles --- */
+	.bounding-circle {
+		fill: none;
+		stroke: #4b5563; /* Darker stroke for better contrast on white */
+		stroke-width: 1.5px;
+		animation: draw-circle 0.9s ease-out forwards;
+	}
+	
+	.cluster-connector-line {
+		stroke: #1f2937; /* Darker line */
+		stroke-width: 1.5px;
+		animation: fade-in 0.8s 0.4s ease-out forwards;
+		opacity: 0;
+	}
+
+	/* MODIFIED: Stylize SVG labels */
+	.cluster-label {
+		fill: #111827; /* Darker text */
+		font-size: 15px;
+		font-family: 'Inter', sans-serif;
+		font-weight: 600; /* Bolder */
+		animation: fade-in 0.8s 0.2s ease-out forwards;
+		opacity: 0;
+	}
+
+	.dots circle {
+		transition: transform 0.8s ease-in-out, opacity 0.5s ease-in-out, fill 0.5s ease-in-out, r 0.5s ease-in-out;
+		cursor: pointer;
+	}
+	.dots circle:hover {
+		stroke: black;
+		stroke-width: 2px;
+	}
+	.dots circle.faded {
+		opacity: 0.1;
+	}
+
+	/* --- Tooltip --- */
 	.tooltip {
 		position: fixed;
 		visibility: hidden;
@@ -305,45 +368,62 @@
 		margin-bottom: 0;
 	}
 
+	/* --- Scrollytelling Layout (Desktop) --- */
 	.scrolly-container-transparent {
 		display: grid;
 		justify-content: center; 
 		grid-template-columns: auto auto; 
 		gap: 4rem; 
 		padding: 5vh 5vw;
-		color: #374151;
 		font-family: 'Inter', sans-serif;
 	}
+
 	.scrolly-steps {
 		grid-column: 1 / 2;
 		position: relative;
 		z-index: 10;
+		width: 380px;
 	}
+
 	.step {
 		min-height: 85vh;
 		display: flex;
 		align-items: center;
 	}
+
+	/* MODIFIED: New styling for the step content box */
 	.step-content {
-		background: #f9fafb;
-		border: 1px solid #e5e7eb;
+		width: 100%;
+		background: #ffffff; /* Dark slate gray background */
+		color: #000000; /* Light gray text */
+		border: 1px solid #ffffff;
 		padding: 1.5rem 2rem;
-		border-radius: 12px;
-		width: 380px;
-		height: 380px;
+		border-radius: 8px;
 		box-sizing: border-box;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
+		box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1), 0 3px 6px rgba(0,0,0,0.08);
 	}
+
+	/* MODIFIED: New styling for the title ribbon */
 	.step-content h3 {
-		margin-top: 0;
+		background: #111827; /* Very dark background for ribbon */
+		color: #f3f4f6; /* Off-white text */
+		font-size: 0.8rem;
 		font-weight: 600;
-		color: #111827;
+		text-transform: uppercase;
+		text-align: center;
+		letter-spacing: 0.05em;
+		padding: 0.5rem 1.9rem;
+		/* Use negative margin to make it span the parent's padding */
+		margin: -1.5rem -2rem 1.5rem -2rem;
+		border-top-left-radius: 7px; /* Match parent's border-radius */
+		border-top-right-radius: 7px;
 	}
 	.step-content p {
-		line-height: 1.6;
+		line-height: 1.7;
+		font-size: 0.95rem;
 	}
+
+	/* --- Sticky Graphic (Desktop) --- */
 	.scrolly-graphic {
 		grid-column: 2 / 3;
 		position: sticky;
@@ -355,46 +435,75 @@
 	}
 	.chart-wrapper {
 		width: 100%;
+        max-width: 500px;
 	}
 	svg {
 		overflow: visible;
 	}
-	.dots circle {
-		transition: transform 0.8s ease-in-out, opacity 0.5s ease-in-out, fill 0.5s ease-in-out;
-		cursor: pointer;
-	}
-	.dots circle:hover {
-		stroke: black;
-		stroke-width: 2px;
-	}
-	.dots circle.faded {
-		opacity: 0.1;
-	}
+
+	/* --- Responsive Styles (Mobile) --- */
 	@media (max-width: 820px) {
 		.scrolly-container-transparent {
-			display: block;
+			display: flex;
+			flex-direction: column-reverse;
+			padding: 0;
+			gap: 0;
 		}
+
 		.scrolly-graphic {
-			position: -webkit-sticky;
 			position: sticky;
-			top: 5vh;
-			height: 50vh;
-			z-index: 0;
-			margin-bottom: 2rem;
-		}
-		.scrolly-steps {
-			width: 90%;
-			margin: 0 auto;
-		}
-		.step {
-			min-height: auto;
-			padding: 5vh 0;
+			top: 0;
+			height: 65vh;
+			z-index: 1;
+			background: white; /* Keep background white for mobile graphic */
+			width: 100%;
+			border-bottom: 1px solid #e0e0e0;
+			display: flex;
+			align-items: center;
 			justify-content: center;
 		}
-		.step-content {
+
+		.chart-wrapper {
+			padding: 1rem;
+			box-sizing: border-box;
+			max-width: none;
+		}
+		
+		.chart-wrapper svg {
 			width: 100%;
-			height: auto;
-			aspect-ratio: 1 / 1;
+			height: 100%;
+		}
+
+		.cluster-label {
+			font-size: 12px;
+		}
+
+		.scrolly-steps {
+			width: 100%;
+			z-index: 0;
+			background-color: #ffffff; /* Add a light background to the steps area on mobile */
+		}
+
+		.step {
+			min-height: auto;
+			padding: 1rem;
+			margin-bottom: 60vh;
+			display: block;
+		}
+
+		.step:last-of-type {
+			margin-bottom: 30vh;
+		}
+
+		.step-content {
+			width: 90%;
+			margin: 0 auto;
+			padding: 1rem 1.25rem;
+		}
+
+		/* Adjust ribbon margin for mobile padding */
+		.step-content h3 {
+			margin: -1rem -1.25rem 1rem -1.25rem;
 		}
 	}
 </style>

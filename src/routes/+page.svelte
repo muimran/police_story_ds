@@ -24,21 +24,21 @@
 <svelte:head>
   <!-- Primary Meta Tags -->
   <title>Police Story | The Daily Star</title>
-  <meta name="description" content="‘Surveillance Republic’ is a data-driven investigation by Muhammad Imran, published in The Daily Star. It explores how surveillance technology is reshaping governance and civil liberties in Bangladesh." />
+  <meta name="description" content=" " />
   <meta name="author" content="Muhammad Imran" />
-  <meta name="keywords" content="Surveillance Republic, Muhammad Imran, The Daily Star, data journalism, Bangladesh, surveillance, civil liberties, visual storytelling, investigative reporting" />
+  <meta name="keywords" content=" " />
   
   <!-- Open Graph / Facebook -->
-  <meta property="og:title" content="Surveillance Republic | The Daily Star" />
-  <meta property="og:description" content="A data-rich visual investigation into surveillance in Bangladesh, by Muhammad Imran." />
+  <meta property="og:title" content="Police Story | The Daily Star" />
+  <meta property="og:description" content=" " />
   <meta property="og:image" content={socialImageURL} />
   <meta property="og:url" content={canonicalURL} />
   <meta property="og:type" content="article" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Surveillance Republic | The Daily Star" />
-  <meta name="twitter:description" content="How surveillance technology is reshaping governance in Bangladesh. A data journalism piece by Muhammad Imran." />
+  <meta name="twitter:title" content="Police Story | The Daily Star" />
+  <meta name="twitter:description" content=" " />
   <meta name="twitter:image" content={socialImageURL} />
   <meta name="twitter:creator" content={yourTwitterHandle} />
 
@@ -50,11 +50,11 @@
     {
       "@context": "https://schema.org",
       "@type": "NewsArticle",
-      "headline": "Surveillance Republic",
+      "headline": " ",
       "author": {
         "@type": "Person",
         "name": "Muhammad Imran",
-        "url": "https://muhammadimran.me"
+        "url": "https://muhammadimran.com"
       },
       "publisher": {
         "@type": "Organization",
@@ -111,7 +111,7 @@
 
 <Hero />
 
-<Headline publishedDate={new Date('Thu Aug 10, 2025 12:06 PM')} />
+<Headline publishedDate={new Date('Wed Aug 13, 2025 12:06 PM')} />
 
 <!-- Accessibility Skip Link -->
 <div class="article-text">

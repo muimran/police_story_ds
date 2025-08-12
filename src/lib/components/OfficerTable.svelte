@@ -1,22 +1,51 @@
 <script>
-  // 1. Import the data
+  // 1. Imports
+  import { tick } from 'svelte';
   import { commandResponsibilityData } from '$lib/CommandResponsibility.js';
 
-  // 2. Use Svelte 5's $state for reactive data
+  // 2. State variables
   let data = $state(commandResponsibilityData);
-  let sortKey = $state('name');
+  
+  // DEFAULT SORT: The table will now load sorted by 'area' in ascending order.
+  let sortKey = $state('area'); 
   let sortDirection = $state('asc');
   
-  // NEW: State for the "Show More" functionality
+  // State for the "Show More" functionality
   let showAll = $state(false);
-  const initialVisibleRows = 5; // How many rows to show initially
+  const initialVisibleRows = 5;
 
-  // NEW: A derived value that automatically computes the visible data
-  // It shows either the initial slice or the full data array based on `showAll`
+  // A variable to hold the HTML table element for height measurements
+  let tableElement;
+
+  // A derived value that automatically computes the visible data
   let visibleData = $derived(showAll ? data : data.slice(0, initialVisibleRows));
 
+  // 3. Sorting Logic in an $effect
+  // This runs on load and whenever sortKey or sortDirection changes.
+  $effect(() => {
+    data.sort((a, b) => {
+        const valA = a[sortKey];
+        const valB = b[sortKey];
+        
+        if (valA === 'Unknown' || valB === 'Unknown') return 0;
+        
+        if (sortKey === 'date') {
+            const parseDate = (dateStr) => {
+                const [day, month, year] = dateStr.split('/').map(Number);
+                return new Date(2000 + year, month - 1, day);
+            };
+            const dateA = parseDate(valA);
+            const dateB = parseDate(valB);
+            return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+        }
+        
+        if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+  });
 
-  // 3. The sorting logic (unchanged, it correctly sorts the full `data` array)
+  // 4. Function to update sort state when a header is clicked
   function sortBy(key) {
     if (sortKey === key) {
         sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
@@ -24,47 +53,47 @@
         sortKey = key;
         sortDirection = 'asc';
     }
+  }
 
-    data.sort((a, b) => {
-        const valA = a[key];
-        const valB = b[key];
-        
-        // Skip sorting if either value is "Unknown"
-        if (valA === 'Unknown' || valB === 'Unknown') return 0;
-        
-        // Special handling for date sorting
-        if (key === 'date') {
-            // Parse dates in dd/mm/yy format
-            const parseDate = (dateStr) => {
-                const [day, month, year] = dateStr.split('/').map(Number);
-                return new Date(2000 + year, month - 1, day);
-            };
-            
-            const dateA = parseDate(valA);
-            const dateB = parseDate(valB);
-            
-            return sortDirection === 'asc' 
-                ? dateA - dateB 
-                : dateB - dateA;
-        }
-        
-        // Default string comparison for other columns
-        if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
-        if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
-        return 0;
-    });
-}
-
-  // 4. A helper function to show a sort indicator
+  // 5. Helper function for sort indicator arrow
   function getSortIndicator(key) {
     if (sortKey !== key) return '';
     return sortDirection === 'asc' ? ' ▲' : ' ▼';
   }
+
+  // 6. SMOOTH SCROLL: Logic to handle the "Show More/Less" click
+  async function toggleShowAll() {
+    // This special logic only runs when SHRINKING the table ("Show Less")
+    if (showAll && tableElement) {
+      // Measure height before the change
+      const heightBefore = tableElement.offsetHeight;
+      
+      // Trigger the state change to shrink the table
+      showAll = false;
+      
+      // Wait for the DOM to update
+      await tick();
+      
+      // Measure the new, smaller height
+      const heightAfter = tableElement.offsetHeight;
+      
+      // Calculate the difference
+      const heightDifference = heightBefore - heightAfter;
+      
+      // Instantly scroll the window UP by that exact amount
+      window.scrollBy({ top: -heightDifference, behavior: 'auto' });
+
+    } else {
+      // For showing more, just toggle the state normally
+      showAll = !showAll;
+    }
+  }
 </script>
 
-<!-- 5. The HTML markup for your table (No changes needed here) -->
+<!-- 7. The HTML Markup -->
 <div class="table-wrapper">
-  <table>
+  <!-- Bind the table element to our variable -->
+  <table bind:this={tableElement}>
     <thead>
       <tr>
         <th on:click={() => sortBy('name')}>Name<span>{getSortIndicator('name')}</span></th>
@@ -75,7 +104,6 @@
       </tr>
     </thead>
     <tbody>
-      <!-- The #each block now iterates over the `visibleData` derived state -->
       {#each visibleData as row (row.id)}
         <tr>
           <td>{row.name}</td>
@@ -88,10 +116,11 @@
     </tbody>
   </table>
 
-  <!-- NEW: "Show More" button container, positioned to the right -->
+  <!-- "Show More" button container -->
   {#if data.length > initialVisibleRows}
     <div class="show-more-container">
-      <button class="show-more-button" on:click={() => showAll = !showAll}>
+      <!-- The button now calls our new toggleShowAll function -->
+      <button class="show-more-button" on:click={toggleShowAll}>
         {#if showAll}
           Show Less
         {:else}
@@ -102,8 +131,7 @@
   {/if}
 </div>
 
-<!-- 6. The completely revamped styling -->
-
+<!-- 8. The Styling (unchanged) -->
 <style>
   .table-wrapper {
     width: 100%;
@@ -124,7 +152,6 @@
     line-height: 1.3; 
   }
   
-  /* --- Header Styling --- */
   th {
     border-top: 1px solid #333;
     border-bottom: 2px solid #333;
@@ -136,25 +163,17 @@
     cursor: pointer;
     user-select: none;
     height: 40px;
-      top: 60px; /* Or better: top: var(--header-height); */
-
-  background: white; 
-  z-index: 1;
-    
-    /* === ADD THIS FOR THE STICKY HEADER === */
     position: sticky;
     top: 0;
-    background: white; /* Or your page's background color */
-    z-index: 1; /* Ensures the header stays on top of the body content */
+    background: white;
+    z-index: 1;
   }
-
 
   th span {
     display: inline-block;
     width: 1em;
   }
   
-  /* --- Body Styling --- */
   tbody tr {
     border-bottom: 1px solid #e5e5e5;
   }
@@ -169,7 +188,6 @@
     color: #333;
   }
   
-  /* --- "Show More" Button Styling --- */
   .show-more-container {
     text-align: right; 
     padding: 8px 0;

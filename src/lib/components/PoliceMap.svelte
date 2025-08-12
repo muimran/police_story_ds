@@ -53,11 +53,8 @@
 	}
 
 	$: if (chapters.length > 0 && map?.isStyleLoaded()) {
-		// This block now primarily handles updates after the initial load
 		if (isInitialLoad) {
-			// The initial load is now handled in map.on('load')
 		} else {
-			// For subsequent steps, run the update logic
 			tableVisible = false;
 			setTimeout(() => {
 				displayedLayerData = chapters[activeIndex].layers;
@@ -82,14 +79,56 @@
 		const [scrollyRes, amoRes] = await Promise.all([ fetch(`${base}/scrolly.csv`), fetch(`${base}/amo_data.csv`) ]);
 		const scrollyText = await scrollyRes.text();
 		const amoText = await amoRes.text();
-		const amoLines = amoText.split('\n');
-		const amoHeader = amoLines[0].replace('rubber_cartridge', 'rubber_cartridge_1').replace('rubber_cartridge', 'rubber_cartridge_2');
-		const correctedAmoText = [amoHeader, ...amoLines.slice(1)].join('\n');
 		const scrollyData = csvParse(scrollyText);
-		const amoData = csvParse(correctedAmoText);
+		const amoData = csvParse(amoText);
+
 		const thanaCoords = amoData.reduce((acc, row) => { if (row.thana && !acc[row.thana]) { acc[row.thana] = { lat: +row.lat, lon: +row.lon }; } return acc; }, {});
 		const allThanaNames = [...new Set(amoData.map(d => d.thana).filter(Boolean))];
-		chapters = scrollyData.map(step => { const chapter = { sl: step.sl, textbox: step.textbox, view: { center: [+step.lon, +step.lat], zoom: +step.zoom }, media_src: step.media_src, media_lnglat: (step.media_lng && step.media_lat) ? [+step.media_lng, +step.media_lat] : null, layers: [] }; let thanasToProcess; if (step.thana === "All") { thanasToProcess = allThanaNames; } else if (step.thana && step.thana !== "0") { thanasToProcess = step.thana.split(',').map(t => t.trim()); } else { thanasToProcess = []; } const amoTypes = (step.amo_type && step.amo_type !== '0') ? step.amo_type.split(',').map(t => t.trim()) : []; const stepDateNormalized = normalizeDate(step.date); if (thanasToProcess.length > 0 && amoTypes.length > 0) { thanasToProcess.forEach(thanaName => { if (!thanaCoords[thanaName]) { return; } const layerData = { thana: thanaName, coords: [thanaCoords[thanaName].lon, thanaCoords[thanaName].lat], totals: {} }; const filteredAmo = amoData.filter(d => d.thana === thanaName && normalizeDate(d.date) === stepDateNormalized); amoTypes.forEach(type => { layerData.totals[type] = filteredAmo.reduce((sum, row) => { let value = (type === 'rubber_cartridge') ? (Number(row.rubber_cartridge_1) || 0) + (Number(row.rubber_cartridge_2) || 0) : (Number(row[type]) || 0); return sum + value; }, 0); }); chapter.layers.push(layerData); }); } else if (thanasToProcess.length > 0) { thanasToProcess.forEach(thanaName => { if (!thanaCoords[thanaName]) { return; } chapter.layers.push({ thana: thanaName, coords: [thanaCoords[thanaName].lon, thanaCoords[thanaName].lat], totals: {}, highlight: true }); }); } return chapter; });
+		
+        chapters = scrollyData.map(step => { 
+            const chapter = { 
+                sl: step.sl, 
+                textbox: step.textbox, 
+                displayDate: formatDateForRibbon(step.date),
+                view: { center: [+step.lon, +step.lat], zoom: +step.zoom }, 
+                media_src: step.media_src, 
+                media_lnglat: (step.media_lng && step.media_lat) ? [+step.media_lng, +step.media_lat] : null, 
+                layers: [] 
+            }; 
+            
+            let thanasToProcess; 
+            if (step.thana === "All") { 
+                thanasToProcess = allThanaNames; 
+            } else if (step.thana && step.thana !== "0") { 
+                thanasToProcess = step.thana.split(',').map(t => t.trim()); 
+            } else { 
+                thanasToProcess = []; 
+            } 
+            
+            const amoTypes = (step.amo_type && step.amo_type !== '0') ? step.amo_type.split(',').map(t => t.trim()) : []; 
+            const stepDateNormalized = normalizeDate(step.date); 
+            
+            if (thanasToProcess.length > 0 && amoTypes.length > 0) { 
+                thanasToProcess.forEach(thanaName => { 
+                    if (!thanaCoords[thanaName]) { return; } 
+                    const layerData = { thana: thanaName, coords: [thanaCoords[thanaName].lon, thanaCoords[thanaName].lat], totals: {} }; 
+                    const filteredAmo = amoData.filter(d => d.thana === thanaName && normalizeDate(d.date) === stepDateNormalized); 
+                    
+                    amoTypes.forEach(type => {
+                        layerData.totals[type] = filteredAmo.reduce((sum, row) => {
+                            return sum + (Number(row[type]) || 0);
+                        }, 0);
+                    });
+                    chapter.layers.push(layerData); 
+                }); 
+            } else if (thanasToProcess.length > 0) { 
+                thanasToProcess.forEach(thanaName => { 
+                    if (!thanaCoords[thanaName]) { return; } 
+                    chapter.layers.push({ thana: thanaName, coords: [thanaCoords[thanaName].lon, thanaCoords[thanaName].lat], totals: {}, highlight: true }); 
+                }); 
+            } 
+            return chapter; 
+        });
 		
         map = new mapboxgl.Map({ container: mapContainer, style: MAP_STYLE, center: [90.39159, 23.75466], zoom: 11, interactive: false });
 		
@@ -98,15 +137,11 @@
 			map.addLayer({ id: 'thana-label', type: 'symbol', source: 'ammo_data_source', layout: { 'text-field': ['case', ['any', ['get', 'has_data'], ['get', 'highlight']], ['get', 'thana'], ''], 'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'], 'text-size': 14, 'text-offset': ['get', 'labelOffset'], 'text-anchor': ['get', 'labelAnchor'], 'text-allow-overlap': true, 'text-ignore-placement': true }, paint: { 'text-color': '#ffffff', 'text-halo-color': 'rgba(0, 0, 0, 0.9)', 'text-halo-width': 2 } });
 			Object.entries(AMMO_STYLES).forEach(([type, style]) => { map.addLayer({ id: `ammo-circle-${type}`, type: 'circle', source: 'ammo_data_source', paint: { 'circle-color': style.color, 'circle-radius': ['interpolate',['linear'],['sqrt', ['get', `${type}_total`]],0,0,1,8,100,30,1000,75,10000,225], 'circle-opacity': 0.7, 'circle-stroke-color': 'white', 'circle-stroke-width': 1, 'circle-stroke-opacity': ['case', ['>', ['get', `${type}_total`], 0], 1, 0] } }); });
 			
-            // --- FIX APPLIED HERE ---
-            // Manually trigger the state for the first step after the map loads.
-            // This ensures the initial view is set correctly.
             if (chapters.length > 0) {
                 displayedLayerData = chapters[0].layers;
-                isInitialLoad = false; // We've handled the initial load now
+                isInitialLoad = false;
                 updateMap(0);
             }
-            // --- END OF FIX ---
 
             map.on('moveend', () => { if (chapters[activeIndex]) { updateMap(activeIndex); } });
 		});
@@ -124,6 +159,26 @@
 
 	function addDynamicLabelPlacement(layers, mapInstance) { if (!layers || layers.length === 0) return []; const COLLISION_THRESHOLD_PX = 60; const defaultPlacement = { anchor: 'right', offset: [-1.5, 0] }; const alternativePlacement = { anchor: 'left', offset: [1.5, 0] }; const points = layers.map(layer => ({ ...layer, screenCoords: mapInstance.project(layer.coords) })).sort((a, b) => a.screenCoords.x - b.screenCoords.x); for (let i = 0; i < points.length; i++) { points[i].placement = defaultPlacement; for (let j = 0; j < i; j++) { const dist = Math.sqrt(Math.pow(points[i].screenCoords.x - points[j].screenCoords.x, 2) + Math.pow(points[i].screenCoords.y - points[j].screenCoords.y, 2)); if (dist < COLLISION_THRESHOLD_PX) { points[i].placement = alternativePlacement; break; } } } return points; }
     function normalizeDate(dateString) { if (!dateString || typeof dateString !== 'string') return ''; const parts = dateString.split('/'); if (parts.length === 3) { const day = parts[0].padStart(2, '0'); const month = parts[1].padStart(2, '0'); let year = parts[2]; if (year.length === 2) year = `20${year}`; return `${day}/${month}/${year}`; } return dateString; }
+
+    function formatDateForRibbon(dateString) {
+        if (!dateString || typeof dateString !== 'string') return '';
+        const parts = dateString.split('/');
+        if (parts.length === 3) {
+            const monthNames = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+            const day = parseInt(parts[0], 10);
+            const monthIndex = parseInt(parts[1], 10) - 1;
+
+            if (monthIndex >= 0 && monthIndex < 12) {
+                const monthName = monthNames[monthIndex];
+                return `${monthName} ${day}`;
+            }
+        }
+        return '';
+    }
+
 </script>
 
 <svelte:head>
@@ -142,6 +197,11 @@
             {#each chapters as chapter, i}
                 <div class="scrolly-step" data-index={i}>
                     <div class="step-content">
+                        {#if chapter.displayDate}
+                            <div class="step-header-ribbon">
+                                <span>{chapter.displayDate}</span>
+                            </div>
+                        {/if}
                         {@html chapter.textbox}
                     </div>
                 </div>
@@ -150,7 +210,7 @@
     </div>
 
     <div class="legend-container" class:visible={isVisible}>
-        <div class="legend-table-wrapper" style="opacity: {tableVisible ? .8 : 0};">
+        <div class="legend-table-wrapper" style="opacity: {tableVisible ? 1 : 0};">
             {#if activeAmmoTypesInStep.length > 0}
                 <table class="legend-table">
                     <thead>
@@ -183,10 +243,38 @@
 <style>
 	/* --- Main page layout --- */
 	.scrolly-container { position: relative; }
-	.graphic-container { position: sticky; top: 0; height: 100vh; width: 100%; z-index: 1; }
+	.graphic-container { 
+        position: sticky; 
+        top: 0; 
+        height: 100vh;
+        width: 100%; 
+        z-index: 1; 
+    }
 	#map { width: 100%; height: 100%; }
-	.scrolly-steps { position: relative; z-index: 2; max-width: 350px; margin-left: 5%; }
-	.scrolly-step { min-height: 80vh; display: flex; align-items: center; }
+	
+    /* --- MODIFIED: Applying the robust mobile-friendly fix --- */
+    .scrolly-steps { 
+        position: relative; 
+        z-index: 2; 
+        max-width: 360px; 
+        margin-left: 5%; 
+        /* The key fix: pull this element up to overlay the map container */
+        margin-top: -100vh;
+    }
+	.scrolly-step { 
+        /* Add padding-top to create the first "empty" scroll space */
+        padding-top: 100vh;
+        /* Adjust min-height and add padding-bottom for spacing */
+        min-height: auto; 
+        padding-bottom: 80vh;
+        display: flex; 
+        align-items: center; 
+    }
+    /* Ensure the last step has space at the bottom */
+    .scrolly-step:last-child {
+        padding-bottom: 20vh;
+    }
+    /* --- END of MODIFIED section --- */
 
     .step-content {
         width: 100%;
@@ -196,10 +284,24 @@
         border-radius: 6px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0,0,0,0.1);
         border: 1px solid #e0e0e0;
-        border-top: 2px solid #333;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         line-height: 1.6;
         font-size: 14px;
+    }
+
+    .step-header-ribbon {
+        background-color: #333;
+        color: white;
+        text-align: center;
+        padding: 5px 1.5rem;
+        margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+        border-radius: 6px 6px 0 0;
+    }
+    .step-header-ribbon span {
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 1.5px;
+        font-family: 'Courier New', Courier, monospace;
     }
 
     .gradient-top, .gradient-bottom { position: absolute; left: 0; right: 0; z-index: 10; pointer-events: none; }
@@ -209,10 +311,10 @@
     /* --- Legend Styles --- */
     .legend-container {
         position: fixed;
-        top: 8rem;
-        right: 7.5rem;
+        top: 3rem; 
+        left: 5%; 
         z-index: 5;
-        max-width: 45vw;
+        width: 360px;
         max-height: calc(100vh - 4rem);
         display: flex;
         opacity: 0;
@@ -226,6 +328,7 @@
     }
 
     .legend-table-wrapper {
+        width: 100%;
         overflow: auto;
         background: white;
         border-radius: 6px;
@@ -237,10 +340,11 @@
     .legend-table {
         border-collapse: collapse;
         width: 100%;
+        table-layout: fixed;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     .legend-table th, .legend-table td {
-        padding: 6px 12px;
+        padding: 5px 8px;
         text-align: left;
         white-space: nowrap;
     }
@@ -249,7 +353,7 @@
         border-bottom: 2px solid #333;
         background: white;
         color: #555;
-        font-size: 11px;
+        font-size: 9px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -257,9 +361,17 @@
         top: 0;
         z-index: 10;
     }
+
+	.legend-table th:not(:first-child) {
+		text-align: center;
+	}
+
     .legend-table tbody tr { border-bottom: 1px solid #e5e5e5; }
 	.legend-table tbody tr:last-child { border-bottom: none; }
-	.legend-table td { font-size: 13px; color: #333; }
+	.legend-table td { 
+		font-size: 12px;
+		color: #333; 
+	}
 	.thana-header, .legend-table tbody td:first-child {
         position: sticky;
         left: 0;
@@ -270,11 +382,32 @@
     .legend-table td.total-value { text-align: center; font-family: 'Courier New', Courier, monospace; }
     .color-swatch {
         display: inline-block;
-        width: 12px;
-        height: 12px;
+        width: 10px;
+        height: 10px;
         border-radius: 50%;
         border: 1px solid #aaa;
         vertical-align: middle;
         margin-right: 6px;
+    }
+
+    /* --- ADDED: Media Query for Mobile Responsiveness --- */
+    @media (max-width: 768px) {
+        .scrolly-steps {
+            /* On mobile, text boxes should take up most of the screen width */
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 90%;
+        }
+
+        .scrolly-step {
+            /* Align text boxes to the bottom of the screen */
+            align-items: flex-end;
+            padding-bottom: 50vh;
+        }
+
+        .legend-container {
+            /* Hide the complex legend table on small screens */
+            display: none;
+        }
     }
 </style>
