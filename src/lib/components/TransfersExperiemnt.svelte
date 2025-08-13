@@ -113,9 +113,9 @@
 
 		const desktopClusterPositions = {
 			'Specialized Operational Units':     { x: 160, y: 0 },
-			'Training & Development':            { x: 165, y: 190 },
-			'Central & Regional Administration': { x: 160, y: 330 },
-			'Investigation & Intelligence':      { x: 160, y: 450 },
+			'Training & Development':            { x: 165, y: 193 },
+			'Central & Regional Administration': { x: 160, y: 340 },
+			'Investigation & Intelligence':      { x: 160, y: 455 },
 			'Geographic Field Commands':         { x: 160, y: 550 }
 		};
 

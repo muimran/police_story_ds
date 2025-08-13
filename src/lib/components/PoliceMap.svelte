@@ -40,32 +40,63 @@
 		response.element.querySelector('.step-content').style.opacity = opacity;
 	}
 
-	// --- MODIFIED FUNCTION ---
 	function updateMap(stepIndex) {
 		if (!chapters || !chapters[stepIndex] || !map.isStyleLoaded()) return;
 		const chapter = chapters[stepIndex];
 
-		// Create a mutable copy of the view options from the chapter data.
 		const viewOptions = { ...chapter.view };
-
-		// On mobile devices, adjust the view to be more zoomed out and shifted
-		// to the right. This makes the map's content appear more to the left,
-		// compensating for the centered text box.
 		if (window.innerWidth <= 768) {
-			viewOptions.zoom -= 1; // <!-- MODIFIED --> Zoom out by a full step.
-			// Create a new array for the center to avoid mutating the original data.
-			// Increase longitude (the first value) to shift the map center east (right).
+			viewOptions.zoom -= 1;
 			viewOptions.center = [viewOptions.center[0] + 0.015, viewOptions.center[1]];
 		}
 		
 		map.flyTo({ ...viewOptions, duration: 1200, essential: true });
 		
 		if (chapter.media_src && chapter.media_lnglat) { activeMediaSrc = chapter.media_src; activeMediaLngLat = chapter.media_lnglat; } else { activeMediaSrc = ''; activeMediaLngLat = null; }
-		const positionedLayers = addDynamicLabelPlacement(chapter.layers, map);
-		const features = positionedLayers.map(layer => { const properties = { thana: layer.thana, highlight: layer.highlight || false, labelOffset: layer.placement.offset, labelAnchor: layer.placement.anchor }; Object.keys(AMMO_STYLES).forEach(ammoType => { properties[`${ammoType}_total`] = layer.totals[ammoType] || 0; }); properties.has_data = Object.values(layer.totals).some(total => total > 0); return { type: 'Feature', geometry: { type: 'Point', coordinates: layer.coords }, properties }; });
-		const geojsonData = { type: 'FeatureCollection', features };
-		const source = map.getSource('ammo_data_source');
-		if (source) { source.setData(geojsonData); }
+		
+        const positionedLayers = addDynamicLabelPlacement(chapter.layers, map);
+
+        const labelFeatures = positionedLayers.map(layer => {
+            const hasData = Object.values(layer.totals).some(total => total > 0);
+            return {
+                type: 'Feature',
+                geometry: { type: 'Point', coordinates: layer.coords },
+                properties: {
+                    thana: layer.thana,
+                    highlight: layer.highlight || false,
+                    labelOffset: layer.placement.offset,
+                    labelAnchor: layer.placement.anchor,
+                    has_data: hasData
+                }
+            };
+        });
+        const labelSource = map.getSource('thana_labels_source');
+        if (labelSource) {
+            labelSource.setData({ type: 'FeatureCollection', features: labelFeatures });
+        }
+
+        let circleFeatures = [];
+        positionedLayers.forEach(layer => {
+            Object.entries(layer.totals).forEach(([type, total]) => {
+                if (total > 0) {
+                    circleFeatures.push({
+                        type: 'Feature',
+                        geometry: { type: 'Point', coordinates: layer.coords },
+                        properties: {
+                            ammo_type: type,
+                            total: total
+                        }
+                    });
+                }
+            });
+        });
+        
+        circleFeatures.sort((a, b) => b.properties.total - a.properties.total);
+        
+        const circleSource = map.getSource('ammo_circles_source');
+        if (circleSource) {
+            circleSource.setData({ type: 'FeatureCollection', features: circleFeatures });
+        }
 	}
 
 	$: if (chapters.length > 0 && map?.isStyleLoaded()) {
@@ -149,9 +180,30 @@
         map = new mapboxgl.Map({ container: mapContainer, style: MAP_STYLE, center: [90.39159, 23.75466], zoom: 11, interactive: false });
 
         map.on('load', () => {
-			map.addSource('ammo_data_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-			map.addLayer({ id: 'thana-label', type: 'symbol', source: 'ammo_data_source', layout: { 'text-field': ['case', ['any', ['get', 'has_data'], ['get', 'highlight']], ['get', 'thana'], ''], 'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'], 'text-size': 14, 'text-offset': ['get', 'labelOffset'], 'text-anchor': ['get', 'labelAnchor'], 'text-allow-overlap': true, 'text-ignore-placement': true }, paint: { 'text-color': '#ffffff', 'text-halo-color': 'rgba(0, 0, 0, 0.9)', 'text-halo-width': 2 } });
-			Object.entries(AMMO_STYLES).forEach(([type, style]) => { map.addLayer({ id: `ammo-circle-${type}`, type: 'circle', source: 'ammo_data_source', paint: { 'circle-color': style.color, 'circle-radius': ['interpolate',['linear'],['sqrt', ['get', `${type}_total`]],0,0,1,8,100,30,1000,75,10000,225], 'circle-opacity': 0.7, 'circle-stroke-color': 'white', 'circle-stroke-width': 1, 'circle-stroke-opacity': ['case', ['>', ['get', `${type}_total`], 0], 1, 0] } }); });
+            map.addSource('thana_labels_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+			map.addSource('ammo_circles_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+			
+            map.addLayer({ 
+                id: 'thana-label', 
+                type: 'symbol', 
+                source: 'thana_labels_source', 
+                layout: { 'text-field': ['case', ['any', ['get', 'has_data'], ['get', 'highlight']], ['get', 'thana'], ''], 'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'], 'text-size': 14, 'text-offset': ['get', 'labelOffset'], 'text-anchor': ['get', 'labelAnchor'], 'text-allow-overlap': true, 'text-ignore-placement': true }, 
+                paint: { 'text-color': '#ffffff', 'text-halo-color': 'rgba(0, 0, 0, 0.9)', 'text-halo-width': 2 } 
+            });
+			
+            map.addLayer({
+                id: 'ammo-circles',
+                type: 'circle',
+                source: 'ammo_circles_source',
+                paint: {
+                    'circle-color': ['match', ['get', 'ammo_type'], ...Object.entries(AMMO_STYLES).flatMap(([type, style]) => [type, style.color]), '#ccc'],
+                    'circle-radius': ['interpolate', ['linear'], ['sqrt', ['get', 'total']], 0, 0, 1, 8, 100, 30, 1000, 75, 10000, 225],
+                    'circle-opacity': 0.7,
+                    'circle-stroke-color': 'white',
+                    'circle-stroke-width': 1,
+                    'circle-stroke-opacity': 1
+                }
+            });
 
             if (chapters.length > 0) {
                 displayedLayerData = chapters[0].layers;
@@ -172,6 +224,17 @@
 		if (map) map.remove();
 		if (scroller) { window.removeEventListener('resize', scroller.resize); scroller.destroy(); }
 	});
+
+    function getStepTotalForAmmoType(ammoType) {
+        if (!chapters[activeIndex]?.layers) return 0;
+        return chapters[activeIndex].layers.reduce((sum, layer) => {
+            return sum + (layer.totals[ammoType] || 0);
+        }, 0);
+    }
+    
+    function formatNumber(num) {
+        return num.toLocaleString('en-US');
+    }
 
 	function addDynamicLabelPlacement(layers, mapInstance) { if (!layers || layers.length === 0) return []; const COLLISION_THRESHOLD_PX = 60; const defaultPlacement = { anchor: 'right', offset: [-1.5, 0] }; const alternativePlacement = { anchor: 'left', offset: [1.5, 0] }; const points = layers.map(layer => ({ ...layer, screenCoords: mapInstance.project(layer.coords) })).sort((a, b) => a.screenCoords.x - b.screenCoords.x); for (let i = 0; i < points.length; i++) { points[i].placement = defaultPlacement; for (let j = 0; j < i; j++) { const dist = Math.sqrt(Math.pow(points[i].screenCoords.x - points[j].screenCoords.x, 2) + Math.pow(points[i].screenCoords.y - points[j].screenCoords.y, 2)); if (dist < COLLISION_THRESHOLD_PX) { points[i].placement = alternativePlacement; break; } } } return points; }
     function normalizeDate(dateString) { if (!dateString || typeof dateString !== 'string') return ''; const parts = dateString.split('/'); if (parts.length === 3) { const day = parts[0].padStart(2, '0'); const month = parts[1].padStart(2, '0'); let year = parts[2]; if (year.length === 2) year = `20${year}`; return `${day}/${month}/${year}`; } return dateString; }
@@ -194,7 +257,11 @@
         <div class="scrolly-steps">
             {#each chapters as chapter, i}
                 <div class="scrolly-step" data-index={i}>
-                    <div class="step-content">
+                    <div 
+                        class="step-content"
+                        class:first-step={i === 0}
+                        class:last-step={i === chapters.length - 1}
+                    >
                         {#if chapter.displayDate}
                             <div class="step-header-ribbon">
                                 <span>{chapter.displayDate}</span>
@@ -202,8 +269,23 @@
                         {/if}
                         {@html chapter.textbox}
 
-                        {#if i === 10}
+                        {#if i === 9}
                             <img src="{base}/images/t56.png" alt="Type 56 Rifle" class="inline-t56-icon"/>
+                        {/if}
+
+                        <!-- MOBILE-ONLY LEGEND -->
+                        {#if i === activeIndex && chapter.layers.some(layer => Object.values(layer.totals).some(val => val > 0))}
+                            <div class="mobile-legend-summary">
+                                {#each activeAmmoTypesInStep as type}
+                                    <div class="mobile-legend-item">
+                                        <div>
+                                            <span class="color-swatch" style="background-color: {AMMO_STYLES[type].color};"></span>
+                                            <span>{AMMO_STYLES[type].label}</span>
+                                        </div>
+                                        <span class="mobile-legend-total">{formatNumber(getStepTotalForAmmoType(type))}</span>
+                                    </div>
+                                {/each}
+                            </div>
                         {/if}
                     </div>
                 </div>
@@ -262,7 +344,34 @@
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         line-height: 1.6;
         font-size: 14px;
+        transition: background-color 0.3s, color 0.3s;
     }
+
+    /* --- START: STYLES FOR FIRST AND LAST STEPS --- */
+    .step-content.first-step,
+    .step-content.last-step {
+        background-color: #333; /* Using ribbon color */
+        color: white;
+        border-color: #555; /* A slightly lighter border for definition */
+    }
+    
+    .first-step .mobile-legend-item,
+    .last-step .mobile-legend-item {
+        color: #f0f0f0;
+    }
+
+    .first-step .mobile-legend-total,
+    .last-step .mobile-legend-total {
+        background-color: #f0f0f0;
+        color: #000;
+    }
+    
+    .first-step .mobile-legend-summary,
+    .last-step .mobile-legend-summary {
+        border-top-color: #555;
+    }
+    /* --- END: STYLES FOR FIRST AND LAST STEPS --- */
+
 
     .inline-t56-icon {
         display: block;
@@ -378,11 +487,45 @@
         margin-right: 6px;
     }
 
+    /* --- MOBILE LEGEND STYLES --- */
+    .mobile-legend-summary {
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    .mobile-legend-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12px;
+        font-weight: 500;
+        color: #555;
+    }
+
+    .mobile-legend-total {
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        color: #000;
+        background-color: #f0f0f0;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+
     /* --- Media Query for Mobile layout --- */
     @media (max-width: 768px) {
         .legend-container-desktop {
             display: none;
         }
+
+        .mobile-legend-summary {
+            display: flex;
+        }
+
         .scrolly-steps {
             max-width: 90%;
             margin-left: auto;

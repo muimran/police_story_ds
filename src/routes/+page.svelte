@@ -227,7 +227,12 @@
     margin-bottom: 2.5rem;
     padding: 1.5rem 0; /* Adjusted padding */
   }
-
+  .documents-section .methodology-headline {
+    color: #006261;
+  }
+  .documents-section .arrow {
+    border-color: #006261;
+  }
   /* Styling for the original 'Methodology' section */
   .methodology-section {
     border-top: 1px solid #e0e0e0;
