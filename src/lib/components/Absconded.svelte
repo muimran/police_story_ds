@@ -3,6 +3,8 @@
 	import { csv } from 'd3-fetch';
 	import { base } from '$app/paths';
 
+	let windowWidth;
+
 	// --- 1. STATE ---
 	let officerData = [];
 	let isLoading = true;
@@ -11,11 +13,58 @@
 	// --- NEW STATE for TOUCH/TAP ---
 	let isTouchDevice = false;
 	let activeOfficerId = null;
-	let chartContainer; // To bind to the chart div for outside click detection
+	let chartContainer;
 
 	// --- Tooltip State ---
 	let timeoutId;
 	let tooltipWrapper;
+
+	// --- RESPONSIVE ANNOTATION STATE ---
+	const mobileBreakpoint = 768; // The screen width to switch to mobile layout
+
+	// --- Desktop Controls (for screens > 768px) ---
+	let annoContainerX_desktop = 19;
+	let annoContainerY_desktop = -8;
+	let annoTextX_desktop = 26;
+	let annoTextY_desktop = 0;
+	let annoArrowX_desktop = -25;
+	let annoArrowY_desktop = 25;
+	let arrowPath_desktop = 'M 48 2 C 40 20, 20 35, 5 45';
+
+	// --- Mobile Controls (for screens <= 768px) ---
+	let annoContainerX_mobile = 23;
+	let annoContainerY_mobile = -20;
+	let annoTextX_mobile = 30;
+	let annoTextY_mobile = 0;
+	let annoArrowX_mobile = -20;
+	let annoArrowY_mobile = 30;
+	let arrowPath_mobile = 'M 45 5 C 30 15, 15 30, 2 42';
+
+	// --- Active variables that the HTML will use ---
+	let annoContainerX, annoContainerY, annoTextX, annoTextY, annoArrowX, annoArrowY, arrowPath;
+
+	$: if (windowWidth) {
+		if (windowWidth <= mobileBreakpoint) {
+			// Use Mobile Values
+			annoContainerX = annoContainerX_mobile;
+			annoContainerY = annoContainerY_mobile;
+			annoTextX = annoTextX_mobile;
+			annoTextY = annoTextY_mobile;
+			annoArrowX = annoArrowX_mobile;
+			annoArrowY = annoArrowY_mobile;
+			arrowPath = arrowPath_mobile;
+		} else {
+			// Use Desktop Values
+			annoContainerX = annoContainerX_desktop;
+			annoContainerY = annoContainerY_desktop;
+			annoTextX = annoTextX_desktop;
+			annoTextY = annoTextY_desktop;
+			annoArrowX = annoArrowX_desktop;
+			annoArrowY = annoArrowY_desktop;
+			arrowPath = arrowPath_desktop;
+		}
+	}
+	// --- END OF ANNOTATION STATE ---
 
 	// --- 2. CONFIGURATION & HELPERS ---
 	const rankColors = {
@@ -52,7 +101,6 @@
 		});
 	}
 
-	// --- REUSABLE TOOLTIP LOGIC ---
 	function showTooltip(event, officer) {
 		clearTimeout(timeoutId);
 		tooltipWrapper.style.visibility = 'visible';
@@ -73,26 +121,19 @@
 	function hideTooltip() {
 		timeoutId = setTimeout(() => {
 			if (activeOfficerId === null) {
-				// Only hide if not actively tapped
 				tooltipWrapper.style.visibility = 'hidden';
 			}
 		}, 100);
 	}
 
-	// --- Tooltip Handlers for DESKTOP (HOVER) and MOBILE (TAP) ---
 	onMount(() => {
-		// Detect if it's a touch device
 		isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
 		tooltipWrapper = document.createElement('div');
 		tooltipWrapper.className = 'tooltip-container';
 		document.body.appendChild(tooltipWrapper);
-
-		// Add a listener to close the tooltip if a tap happens outside
 		if (isTouchDevice) {
 			window.addEventListener('click', handleWindowClick);
 		}
-
 		return () => {
 			document.body.removeChild(tooltipWrapper);
 			if (isTouchDevice) {
@@ -101,35 +142,28 @@
 		};
 	});
 
-	// For desktop hover
 	function handleMouseOver(event, officer) {
-		if (isTouchDevice) return; // Do nothing on touch devices
+		if (isTouchDevice) return;
 		showTooltip(event, officer);
 	}
 
-	// For desktop hover
 	function handleMouseOut() {
-		if (isTouchDevice) return; // Do nothing on touch devices
+		if (isTouchDevice) return;
 		hideTooltip();
 	}
 
-	// For mobile tap
 	function handleDotClick(event, officer) {
-		if (!isTouchDevice) return; // Do nothing on non-touch devices
-		event.stopPropagation(); // Prevent the window click handler from firing immediately
-
+		if (!isTouchDevice) return;
+		event.stopPropagation();
 		if (activeOfficerId === officer.id) {
-			// If tapping the same dot, hide it
 			activeOfficerId = null;
 			tooltipWrapper.style.visibility = 'hidden';
 		} else {
-			// If tapping a new dot, show it
 			activeOfficerId = officer.id;
 			showTooltip(event, officer);
 		}
 	}
 
-	// For closing the tooltip by tapping outside on mobile
 	function handleWindowClick(event) {
 		if (activeOfficerId !== null && !event.target.closest('.dot')) {
 			activeOfficerId = null;
@@ -145,22 +179,37 @@
 	function updateTooltipPosition(pageX, pageY) {
 		const offsetX = 15;
 		const offsetY = 15;
-		tooltipWrapper.style.left = `${pageX + offsetX}px`;
-		tooltipWrapper.style.top = `${pageY + offsetY}px`;
-
-		const tooltipRect = tooltipWrapper.getBoundingClientRect();
 		const windowWidth = window.innerWidth;
 		const windowHeight = window.innerHeight;
 
-		if (pageX + offsetX + tooltipRect.width > windowWidth) {
-			tooltipWrapper.style.left = `${pageX - offsetX - tooltipRect.width}px`;
+		tooltipWrapper.style.left = `${pageX + offsetX}px`;
+		tooltipWrapper.style.top = `${pageY + offsetY}px`;
+		const tooltipRect = tooltipWrapper.getBoundingClientRect();
+
+		let finalX = pageX + offsetX;
+		if (finalX + tooltipRect.width > windowWidth) {
+			finalX = pageX - offsetX - tooltipRect.width;
 		}
-		if (pageY + offsetY + tooltipRect.height > windowHeight) {
-			tooltipWrapper.style.top = `${pageY - offsetY - tooltipRect.height}px`;
+		if (finalX < 0) {
+			finalX = 5;
 		}
+		tooltipWrapper.style.left = `${finalX}px`;
+
+		let finalY;
+		if (isTouchDevice) {
+			finalY = pageY - offsetY - tooltipRect.height;
+			if (finalY < 0) {
+				finalY = pageY + offsetY;
+			}
+		} else {
+			finalY = pageY + offsetY;
+			if (finalY + tooltipRect.height > windowHeight) {
+				finalY = pageY - offsetY - tooltipRect.height;
+			}
+		}
+		tooltipWrapper.style.top = `${finalY}px`;
 	}
 
-	// --- 3. DATA FETCHING & PROCESSING ---
 	onMount(async () => {
 		try {
 			const data = await csv(`${base}/absconded.csv`);
@@ -178,13 +227,11 @@
 			officerData = processed;
 		} catch (e) {
 			error = 'Failed to load officer data.';
-			console.error('Error loading CSV:', e);
 		} finally {
 			isLoading = false;
 		}
 	});
 
-	// --- 4. REACTIVE DATA TRANSFORMATION ---
 	let processedData = [];
 	let axisLabels = [];
 	$: if (officerData.length > 0) {
@@ -238,8 +285,9 @@
 	}
 </script>
 
+<svelte:window bind:innerWidth={windowWidth} />
+
 <div class="timeline-container">
-	<!-- Title and Caption -->
 	<h2 class="chart-title">A Timeline of Fleeing Officials</h2>
 	<p class="chart-caption">
 		Each dot represents an official who has fled.
@@ -254,7 +302,6 @@
 	{:else if error}
 		<p class="error">{error}</p>
 	{:else if processedData.length}
-		<!-- bind the chart div to our variable -->
 		<div class="chart" bind:this={chartContainer}>
 			{#each processedData as group}
 				<div class="week-column" style="left: {group.positionPercent}%">
@@ -271,13 +318,19 @@
 				</div>
 			{/each}
 
-			<!-- MODIFIED ANNOTATION -->
-			<div class="annotation" style="left: 27%; top: -10px;">
+			<!-- ANNOTATION - Now fully responsive -->
+			<div class="annotation" style="left: {annoContainerX}%; top: {annoContainerY}px;">
 				<div class="annotation-content">
-					<div class="annotation-text" style="padding-left: 10px;">
+					<div class="annotation-text" style="left: {annoTextX}px; top: {annoTextY}px;">
 						Most top-ranked<br />officials fled on<br />August 6
 					</div>
-					<svg width="50" height="50" viewBox="0 0 50 50" class="annotation-arrow">
+					<svg
+						width="50"
+						height="50"
+						viewBox="0 0 50 50"
+						class="annotation-arrow"
+						style="left: {annoArrowX}px; top: {annoArrowY}px;"
+					>
 						<defs>
 							<marker
 								id="arrowhead"
@@ -293,7 +346,7 @@
 							</marker>
 						</defs>
 						<path
-							d="M 48 2 C 40 20, 20 35, 5 45"
+							d={arrowPath}
 							stroke="black"
 							stroke-width="1.5"
 							fill="none"
@@ -318,6 +371,7 @@
 </div>
 
 <style>
+    /* ... all your existing CSS remains the same ... */
 	:global(.tooltip-container) {
 		position: absolute;
 		visibility: hidden;
@@ -368,7 +422,6 @@
 		margin: 2rem auto;
 		padding: 0 20px;
 		box-sizing: border-box;
-		transition: padding 0.3s ease;
 		font-family: 'Georgia', serif;
 	}
 
@@ -376,10 +429,8 @@
 		position: relative;
 		height: 250px;
 		margin-bottom: 10px;
-		transition: height 0.3s ease;
 	}
 
-	/* --- Title, Caption, Annotations Styles --- */
 	.chart-title {
 		text-align: center;
 		font-size: 1.6rem;
@@ -422,24 +473,25 @@
 
 	.annotation-content {
 		position: relative;
-		/* MODIFIED: Changed alignment */
 		text-align: left;
+		width: 150px;
+		height: 100px;
 	}
 
 	.annotation-text {
-		font-family: 'Georgia', serif;
-		font-size: 0.85rem;
-		line-height: 1.4;
-		color: #333;
-	}
+	position: absolute;
+	font-family: 'Georgia', serif; /* <-- FONT FAMILY */
+	font-size: 0.85rem;          /* <-- FONT SIZE */
+	line-height: 1.4;            /* <-- SPACING BETWEEN LINES */
+	color: #333;                 /* <-- TEXT COLOR (a dark gray) */
+	white-space: nowrap;         /* <-- Prevents the text from wrapping to a new line */
+	font-weight: normal;         /* <-- FONT WEIGHT (e.g., normal, bold) */
+	font-style: italic;          /* <-- FONT STYLE (e.g., normal, italic) */
+}
 
 	.annotation-arrow {
 		position: absolute;
-		top: 25px;
-		/* MODIFIED: Positioned from the left */
-		left: -25px;
 	}
-	/* --- END NEW STYLES --- */
 
 	.week-column {
 		position: absolute;
@@ -499,7 +551,6 @@
 	.axis-text {
 		font-size: 0.8rem;
 		white-space: nowrap;
-		transition: font-size 0.3s ease;
 	}
 
 	.error {
@@ -528,6 +579,27 @@
 		.chart-caption,
 		.annotation-text {
 			font-size: 0.8rem;
+		}
+
+		:global(.tooltip-container) {
+			flex-direction: column-reverse;
+			align-items: center;
+			gap: 8px;
+		}
+
+		:global(.tooltip-card) {
+			min-width: 150px;
+			text-align: center;
+		}
+
+		:global(.tooltip-header) {
+			font-size: 0.75rem;
+			padding: 4px 10px;
+		}
+
+		:global(.tooltip-body) {
+			font-size: 0.8rem;
+			padding: 6px 10px;
 		}
 	}
 </style>

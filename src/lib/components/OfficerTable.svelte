@@ -249,4 +249,20 @@
     color: #e65100;
     font-weight: 600;
   }
+
+  /* --- ADDITION: MEDIA QUERY FOR MOBILE SCREENS --- */
+  @media (max-width: 600px) {
+    th, td {
+      /* Reduce padding to give content more space */
+      padding-left: 6px;
+      padding-right: 6px;
+    }
+    th {
+      font-size: 9px; /* Approx. 15-20% smaller than 11px */
+    }
+    td {
+      font-size: 11px; /* Approx. 15% smaller than 13px */
+    }
+  }
+
 </style>
