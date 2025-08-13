@@ -2,27 +2,24 @@
 	import { onMount } from 'svelte';
 	import { csv } from 'd3-fetch';
 	import { base } from '$app/paths';
+	import { fly } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
 
 	let windowWidth;
 
-	// --- 1. STATE ---
 	let officerData = [];
 	let isLoading = true;
 	let error = null;
 
-	// --- NEW STATE for TOUCH/TAP ---
 	let isTouchDevice = false;
 	let activeOfficerId = null;
 	let chartContainer;
 
-	// --- Tooltip State ---
 	let timeoutId;
 	let tooltipWrapper;
 
-	// --- RESPONSIVE ANNOTATION STATE ---
-	const mobileBreakpoint = 768; // The screen width to switch to mobile layout
+	const mobileBreakpoint = 768;
 
-	// --- Desktop Controls (for screens > 768px) ---
 	let annoContainerX_desktop = 19;
 	let annoContainerY_desktop = -8;
 	let annoTextX_desktop = 26;
@@ -31,7 +28,6 @@
 	let annoArrowY_desktop = 25;
 	let arrowPath_desktop = 'M 48 2 C 40 20, 20 35, 5 45';
 
-	// --- Mobile Controls (for screens <= 768px) ---
 	let annoContainerX_mobile = 23;
 	let annoContainerY_mobile = -20;
 	let annoTextX_mobile = 30;
@@ -40,12 +36,10 @@
 	let annoArrowY_mobile = 30;
 	let arrowPath_mobile = 'M 45 5 C 30 15, 15 30, 2 42';
 
-	// --- Active variables that the HTML will use ---
 	let annoContainerX, annoContainerY, annoTextX, annoTextY, annoArrowX, annoArrowY, arrowPath;
 
 	$: if (windowWidth) {
 		if (windowWidth <= mobileBreakpoint) {
-			// Use Mobile Values
 			annoContainerX = annoContainerX_mobile;
 			annoContainerY = annoContainerY_mobile;
 			annoTextX = annoTextX_mobile;
@@ -54,7 +48,6 @@
 			annoArrowY = annoArrowY_mobile;
 			arrowPath = arrowPath_mobile;
 		} else {
-			// Use Desktop Values
 			annoContainerX = annoContainerX_desktop;
 			annoContainerY = annoContainerY_desktop;
 			annoTextX = annoTextX_desktop;
@@ -64,9 +57,7 @@
 			arrowPath = arrowPath_desktop;
 		}
 	}
-	// --- END OF ANNOTATION STATE ---
 
-	// --- 2. CONFIGURATION & HELPERS ---
 	const rankColors = {
 		'Additional Deputy Police Commissioner': '#4E79A7',
 		'Additional Police Commissioner': '#fdba74',
@@ -288,13 +279,15 @@
 <svelte:window bind:innerWidth={windowWidth} />
 
 <div class="timeline-container">
-	<h2 class="chart-title">A Timeline of Fleeing Officials</h2>
+	<h2 class="chart-title">Timeline of Desertion</h2>
 	<p class="chart-caption">
-		Each dot represents an official who has fled.
-		<span class="legend-item"><span class="legend-dot" style="background-color: #fdba74;"></span
-			>Top-Ranked</span>
-		<span class="legend-item"><span class="legend-dot" style="background-color: #4E79A7;"></span
-			>Other Ranks</span>
+		Each dot represents an ex DMP official who has fled
+		<span class="legend-item"
+			><span class="legend-dot" style="background-color: #fdba74;"></span>Top-Ranked</span
+		>
+		<span class="legend-item"
+			><span class="legend-dot" style="background-color: #4E79A7;"></span>Other Ranks</span
+		>
 	</p>
 
 	{#if isLoading}
@@ -303,9 +296,9 @@
 		<p class="error">{error}</p>
 	{:else if processedData.length}
 		<div class="chart" bind:this={chartContainer}>
-			{#each processedData as group}
+			{#each processedData as group (group.weekStart)}
 				<div class="week-column" style="left: {group.positionPercent}%">
-					{#each group.officers as officer}
+					{#each group.officers as officer, i (officer.id)}
 						<div
 							class="dot"
 							style="background-color: {rankColors[officer.rank] || '#BAB0AC'}"
@@ -313,12 +306,12 @@
 							on:mouseout={handleMouseOut}
 							on:mousemove={handleMouseMove}
 							on:click={(e) => handleDotClick(e, officer)}
+							transition:fly={{ y: -20, duration: 400, delay: 50 + i * 30, easing: quintOut }}
 						></div>
 					{/each}
 				</div>
 			{/each}
 
-			<!-- ANNOTATION - Now fully responsive -->
 			<div class="annotation" style="left: {annoContainerX}%; top: {annoContainerY}px;">
 				<div class="annotation-content">
 					<div class="annotation-text" style="left: {annoTextX}px; top: {annoTextY}px;">
@@ -358,7 +351,7 @@
 		</div>
 		<div class="axis">
 			<div class="axis-line"></div>
-			{#each axisLabels as label}
+			{#each axisLabels as label (label.text)}
 				<div class="axis-label" style="left: {label.positionPercent}%">
 					<div class="axis-tick"></div>
 					<span class="axis-text">{label.text}</span>
@@ -368,10 +361,13 @@
 	{:else}
 		<p>No data available to display.</p>
 	{/if}
+
+	<p class="chart-footnote">
+		Since October, 13 ex-DMP officers deserted their posts—11 of them ADCs
+	</p>
 </div>
 
 <style>
-    /* ... all your existing CSS remains the same ... */
 	:global(.tooltip-container) {
 		position: absolute;
 		visibility: hidden;
@@ -447,6 +443,17 @@
 		line-height: 1.5;
 	}
 
+	.chart-footnote {
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+		margin-top: 20px;
+		padding-left: 12px;
+		font-size: 12px;
+		line-height: 1.4;
+		color: #555;
+		font-style: italic;
+		text-align: left;
+	}
+
 	.legend-item {
 		display: inline-flex;
 		align-items: center;
@@ -479,15 +486,15 @@
 	}
 
 	.annotation-text {
-	position: absolute;
-	font-family: 'Georgia', serif; /* <-- FONT FAMILY */
-	font-size: 0.85rem;          /* <-- FONT SIZE */
-	line-height: 1.4;            /* <-- SPACING BETWEEN LINES */
-	color: #333;                 /* <-- TEXT COLOR (a dark gray) */
-	white-space: nowrap;         /* <-- Prevents the text from wrapping to a new line */
-	font-weight: normal;         /* <-- FONT WEIGHT (e.g., normal, bold) */
-	font-style: italic;          /* <-- FONT STYLE (e.g., normal, italic) */
-}
+		position: absolute;
+		font-family: 'Georgia', serif;
+		font-size: 0.85rem;
+		line-height: 1.4;
+		color: #333;
+		white-space: nowrap;
+		font-weight: normal;
+		font-style: italic;
+	}
 
 	.annotation-arrow {
 		position: absolute;
@@ -576,9 +583,15 @@
 		.chart-title {
 			font-size: 1.2rem;
 		}
+
 		.chart-caption,
 		.annotation-text {
 			font-size: 0.8rem;
+		}
+
+		.chart-footnote {
+			font-size: 11px;
+			padding-left: 6px;
 		}
 
 		:global(.tooltip-container) {

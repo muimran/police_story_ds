@@ -21,7 +21,7 @@
 
 	let activeMediaSrc = '';
 	let activeMediaLngLat = null;
-	let tableVisible = true;
+	// CHANGE: Removed tableVisible, it's no longer needed.
 	let displayedLayerData = [];
 	let isInitialLoad = true;
 
@@ -39,7 +39,11 @@
 		let opacity = 1;
 		if (response.progress < fadeInEnd) { opacity = response.progress / fadeInEnd; }
 		else if (response.progress > fadeOutStart) { opacity = 1 - (response.progress - fadeOutStart) / (1 - fadeOutStart); }
-		response.element.querySelector('.step-content').style.opacity = opacity;
+		// Target the step-inner-wrapper to fade text and table together
+		const contentWrapper = response.element.querySelector('.step-inner-wrapper');
+		if (contentWrapper) {
+			contentWrapper.style.opacity = opacity;
+		}
 	}
 
 	function updateMap(stepIndex) {
@@ -54,14 +58,13 @@
 		if (source) { source.setData(geojsonData); }
 	}
 
+	// CHANGE: Simplified this reactive block significantly. No more setTimeout or tableVisible.
 	$: if (chapters.length > 0 && map?.isStyleLoaded()) {
 		if (isInitialLoad) {
+			// This block can be used for any one-time setup on initial load
 		} else {
-			tableVisible = false;
-			setTimeout(() => {
-				displayedLayerData = chapters[activeIndex].layers;
-				tableVisible = true;
-			}, 250);
+			// Just update the data. The DOM and CSS handle the rest.
+			displayedLayerData = chapters[activeIndex].layers;
 			updateMap(activeIndex);
 		}
 	}
@@ -161,25 +164,7 @@
 
 	function addDynamicLabelPlacement(layers, mapInstance) { if (!layers || layers.length === 0) return []; const COLLISION_THRESHOLD_PX = 60; const defaultPlacement = { anchor: 'right', offset: [-1.5, 0] }; const alternativePlacement = { anchor: 'left', offset: [1.5, 0] }; const points = layers.map(layer => ({ ...layer, screenCoords: mapInstance.project(layer.coords) })).sort((a, b) => a.screenCoords.x - b.screenCoords.x); for (let i = 0; i < points.length; i++) { points[i].placement = defaultPlacement; for (let j = 0; j < i; j++) { const dist = Math.sqrt(Math.pow(points[i].screenCoords.x - points[j].screenCoords.x, 2) + Math.pow(points[i].screenCoords.y - points[j].screenCoords.y, 2)); if (dist < COLLISION_THRESHOLD_PX) { points[i].placement = alternativePlacement; break; } } } return points; }
     function normalizeDate(dateString) { if (!dateString || typeof dateString !== 'string') return ''; const parts = dateString.split('/'); if (parts.length === 3) { const day = parts[0].padStart(2, '0'); const month = parts[1].padStart(2, '0'); let year = parts[2]; if (year.length === 2) year = `20${year}`; return `${day}/${month}/${year}`; } return dateString; }
-
-    function formatDateForRibbon(dateString) {
-        if (!dateString || typeof dateString !== 'string') return '';
-        const parts = dateString.split('/');
-        if (parts.length === 3) {
-            const monthNames = [
-                "January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"
-            ];
-            const day = parseInt(parts[0], 10);
-            const monthIndex = parseInt(parts[1], 10) - 1;
-
-            if (monthIndex >= 0 && monthIndex < 12) {
-                const monthName = monthNames[monthIndex];
-                return `${monthName} ${day}`;
-            }
-        }
-        return '';
-    }
+    function formatDateForRibbon(dateString) { if (!dateString || typeof dateString !== 'string') return ''; const parts = dateString.split('/'); if (parts.length === 3) { const monthNames = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ]; const day = parseInt(parts[0], 10); const monthIndex = parseInt(parts[1], 10) - 1; if (monthIndex >= 0 && monthIndex < 12) { const monthName = monthNames[monthIndex]; return `${monthName} ${day}`; } } return ''; }
 
 </script>
 
@@ -201,22 +186,58 @@
         <div class="scrolly-steps">
             {#each chapters as chapter, i}
                 <div class="scrolly-step" data-index={i}>
-                    <div class="step-content">
-                        {#if chapter.displayDate}
-                            <div class="step-header-ribbon">
-                                <span>{chapter.displayDate}</span>
-                            </div>
-                        {/if}
-                        {@html chapter.textbox}
+                    <!-- CHANGE START: Added a wrapper to fade text and table together -->
+                    <div class="step-inner-wrapper">
+                        <div class="step-content">
+                            {#if chapter.displayDate}
+                                <div class="step-header-ribbon">
+                                    <span>{chapter.displayDate}</span>
+                                </div>
+                            {/if}
+                            {@html chapter.textbox}
+                        </div>
+                        
+                        <!-- The mobile legend is now always present but hidden by CSS -->
+                        <div class="legend-container-mobile">
+                            {#if activeAmmoTypesInStep.length > 0}
+                                <div class="legend-table-wrapper">
+                                    <table class="legend-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="thana-header">Thana</th>
+                                                {#each activeAmmoTypesInStep as type}
+                                                    <th>
+                                                        <span class="color-swatch" style="background-color: {AMMO_STYLES[type].color};"></span>
+                                                        {AMMO_STYLES[type].label}
+                                                    </th>
+                                                {/each}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {#each sortedTableData as layer}
+                                                <tr>
+                                                    <td>{layer.thana}</td>
+                                                    {#each activeAmmoTypesInStep as type}
+                                                        <td class="total-value">{layer.totals[type] || 0}</td>
+                                                    {/each}
+                                                </tr>
+                                            {/each}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {/if}
+                        </div>
                     </div>
+                    <!-- CHANGE END -->
                 </div>
             {/each}
         </div>
     </div>
 
-    <div class="legend-container" class:visible={isVisible}>
-        <div class="legend-table-wrapper" style="opacity: {tableVisible ? 1 : 0};">
-            {#if activeAmmoTypesInStep.length > 0}
+    <!-- The desktop legend is unchanged and works as before -->
+    <div class="legend-container legend-container-desktop" class:visible={isVisible}>
+        {#if activeAmmoTypesInStep.length > 0}
+            <div class="legend-table-wrapper">
                 <table class="legend-table">
                     <thead>
                         <tr>
@@ -240,8 +261,8 @@
                         {/each}
                     </tbody>
                 </table>
-            {/if}
-        </div>
+            </div>
+        {/if}
     </div>
 </div>
 
@@ -252,6 +273,12 @@
 	#map { width: 100%; height: 100%; }
 	.scrolly-steps { position: relative; z-index: 2; max-width: 360px; margin-left: 5%; }
 	.scrolly-step { min-height: 80vh; display: flex; align-items: center; }
+
+    /* This wrapper now controls the opacity for both text and table */
+    .step-inner-wrapper {
+        width: 100%;
+        opacity: 0; /* Starts transparent, faded in by JS */
+    }
 
     .step-content {
         width: 100%;
@@ -286,7 +313,7 @@
     .gradient-bottom { bottom: 0; height: 8%; background: linear-gradient(to top, white 0%, transparent 100%); }
 
     /* --- Legend Styles --- */
-    .legend-container {
+    .legend-container-desktop {
         position: fixed;
         top: 3rem; 
         left: 5%; 
@@ -298,10 +325,11 @@
         pointer-events: none;
         transition: opacity 0.3s ease-in-out;
     }
+    .legend-container-desktop.visible { opacity: 1; pointer-events: auto; }
 
-    .legend-container.visible {
-        opacity: 1;
-        pointer-events: auto;
+    .legend-container-mobile {
+        width: 100%;
+        margin-top: 1.5rem;
     }
 
     .legend-table-wrapper {
@@ -311,88 +339,53 @@
         border-radius: 6px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0,0,0,0.1);
         border: 1px solid #e0e0e0;
-        transition: opacity 0.25s ease-in-out;
+        /* CHANGE: Removed opacity transition from here, it's handled by the wrapper now */
     }
     
-    .legend-table {
-        border-collapse: collapse;
-        width: 100%;
-        table-layout: fixed;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-    .legend-table th, .legend-table td {
-        padding: 5px 8px;
-        text-align: left;
-        white-space: nowrap;
-    }
-    .legend-table th {
-        border-top: 1px solid #333;
-        border-bottom: 2px solid #333;
-        background: white;
-        color: #555;
-        font-size: 9px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-
-	.legend-table th:not(:first-child) {
-		text-align: center;
-	}
-
+    .legend-table { border-collapse: collapse; width: 100%; table-layout: fixed; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .legend-table th, .legend-table td { padding: 5px 8px; text-align: left; white-space: nowrap; }
+    .legend-table th { border-top: 1px solid #333; border-bottom: 2px solid #333; background: white; color: #555; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; z-index: 10; }
+	.legend-table th:not(:first-child) { text-align: center; }
     .legend-table tbody tr { border-bottom: 1px solid #e5e5e5; }
 	.legend-table tbody tr:last-child { border-bottom: none; }
-	.legend-table td { 
-		font-size: 12px;
-		color: #333; 
-	}
-	.thana-header, .legend-table tbody td:first-child {
-        position: sticky;
-        left: 0;
-        background: white;
-        border-right: 1px solid #e5e5e5;
-    }
+	.legend-table td { font-size: 12px; color: #333; }
+	.thana-header, .legend-table tbody td:first-child { position: sticky; left: 0; background: white; border-right: 1px solid #e5e5e5; }
 	.legend-table tbody td:first-child { font-weight: 600; color: #000; }
     .legend-table td.total-value { text-align: center; font-family: 'Courier New', Courier, monospace; }
-    .color-swatch {
-        display: inline-block;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        border: 1px solid #aaa;
-        vertical-align: middle;
-        margin-right: 6px;
-    }
+    .color-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 1px solid #aaa; vertical-align: middle; margin-right: 6px; }
 
     /* --- Side Image --- */
-    .side-image-container {
-        position: absolute;
-        top: 50%;
-        right: 5%;
-        transform: translateY(-50%);
-        width: 320px;
-        z-index: 15;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.4s ease-in-out;
+    .side-image-container { position: absolute; top: 50%; right: 5%; transform: translateY(-50%); width: 320px; z-index: 15; opacity: 0; pointer-events: none; transition: opacity 0.4s ease-in-out; }
+    .side-image-container.visible { opacity: 1; pointer-events: auto; }
+    .side-image { width: 100%; height: auto; display: block; border-radius: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0,0,0,0.1); border: 1px solid #e0e0e0; }
+
+
+    /* --- CHANGE START: MOBILE-FIRST LOGIC --- */
+    /* By default, the desktop legend is hidden, and mobile is shown */
+    .legend-container-desktop { display: none; }
+    .legend-container-mobile { display: none; } /* Hidden by default */
+    .scrolly-step.active .legend-container-mobile { display: block; } /* Show ONLY when the step is active */
+
+    @media (max-width: 768px) {
+        .scrolly-steps {
+            max-width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .scrolly-step {
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .legend-table th { font-size: 8px; padding: 4px 6px; }
+        .legend-table td { font-size: 11px; padding: 4px 6px; }
     }
 
-    .side-image-container.visible {
-        opacity: 1;
-        pointer-events: auto;
+    /* For screens wider than 768px, revert to desktop view */
+    @media (min-width: 769px) {
+        .legend-container-desktop { display: flex; } /* Show desktop legend */
+        .legend-container-mobile { display: none !important; } /* Hard hide mobile legend */
     }
-
-    .side-image {
-        width: 100%;
-        height: auto;
-        display: block;
-        border-radius: 6px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0,0,0,0.1);
-        border: 1px solid #e0e0e0;
-    }
-
-    
+    /* --- CHANGE END --- */
 </style>

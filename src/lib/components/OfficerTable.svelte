@@ -134,6 +134,7 @@
     </tbody>
   </table>
 
+  <!-- CORRECTED ORDER: "Show More" button is now before the caption -->
   {#if data.length > initialVisibleRows}
     <div class="show-more-container">
       <button class="show-more-button" on:click={toggleShowAll}>
@@ -145,6 +146,10 @@
       </button>
     </div>
   {/if}
+
+  <div class="table-caption">
+    12 officers were explicitly named in the FIRs; the remaining identifications were confirmed through interviews with at least two lower-ranked officials who served under them at the time.
+  </div>
 </div>
 
 <!-- 8. The Styling -->
@@ -220,9 +225,23 @@
     font-size: 13px; 
     color: #333;
   }
+
+  /* --- ADDED CAPTION STYLES --- */
+  .table-caption {
+    padding: 12px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #555;
+    font-style: italic;
+    /* This border is no longer needed as the button container separates it visually */
+    /* border-top: 1px solid #e5e5e5;  */
+    text-align: left;
+  }
+
   .show-more-container {
     text-align: right; 
     padding: 8px 0;
+    border-top: 1px solid #e5e5e5; /* Moved the border here for better separation */
   }
   .show-more-button {
     background: none;
