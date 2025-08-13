@@ -162,6 +162,7 @@
     width: 100%;
     border-collapse: collapse; 
     border-spacing: 0;
+    table-layout: fixed; /* FIX #1: Force table to obey its width */
   }
   th, td {
     padding: 6px 12px; 
@@ -169,6 +170,7 @@
     vertical-align: middle; 
     white-space: normal;
     line-height: 1.3; 
+    overflow-wrap: break-word; /* FIX #2: Allow long words to break */
   }
 
   /* --- CHANGE 6: UPDATE THE STYLES FOR TH --- */

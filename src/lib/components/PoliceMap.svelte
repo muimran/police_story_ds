@@ -331,9 +331,10 @@
 	.graphic-container { position: sticky; top: 0; height: 100vh; width: 100%; z-index: 1; }
 	#map { width: 100%; height: 100%; }
 	.scrolly-steps { position: relative; z-index: 2; max-width: 360px; margin-left: 5%; }
-	.scrolly-step { min-height: 80vh; display: flex; align-items: center; }
+	.scrolly-step { min-height: 100vh; display: flex; align-items: center; }
 
     .step-content {
+        box-sizing: border-box; /* This is the fix */
         width: 100%;
         padding: 1.5rem;
         background: rgba(255, 255, 255, 0.9);
@@ -534,7 +535,7 @@
         .scrolly-step {
             flex-direction: column;
             justify-content: center;
-            min-height: 100vh;
+            min-height: 120vh;
         }
         .legend-table th {
             font-size: 8px;

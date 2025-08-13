@@ -1,5 +1,5 @@
 <script>
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { csv } from 'd3-fetch';
 	import { base } from '$app/paths';
 	import { fly } from 'svelte/transition';
@@ -17,6 +17,46 @@
 
 	let timeoutId;
 	let tooltipWrapper;
+
+	const TARGET_OFFICER_NAME = 'Mohammad Harun Or Rashid, BPM-Bar, PPM-Bar';
+
+	// --- NEW: Svelte Action for Intersection Observer ---
+	// This function runs when an element is created.
+	// It triggers a callback when the element scrolls into view.
+	function onView(node, callback) {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				entries.forEach((entry) => {
+					if (entry.isIntersecting) {
+						callback();
+						// Stop observing once it has been triggered once
+						observer.disconnect();
+					}
+				});
+			},
+			{ threshold: 0.1 } // Trigger when 10% of the chart is visible
+		);
+
+		observer.observe(node);
+
+		return {
+			destroy() {
+				// Cleanup when the component is destroyed
+				observer.disconnect();
+			}
+		};
+	}
+
+	// --- NEW: Function to run when chart comes into view ---
+	async function handleFirstView() {
+		const targetOfficer = officerData.find((o) => o.officer === TARGET_OFFICER_NAME);
+
+		if (targetOfficer) {
+			// Wait for the DOM just in case, though it should be ready
+			await tick();
+			showInitialTooltip(targetOfficer);
+		}
+	}
 
 	const mobileBreakpoint = 768;
 
@@ -122,29 +162,30 @@
 		tooltipWrapper = document.createElement('div');
 		tooltipWrapper.className = 'tooltip-container';
 		document.body.appendChild(tooltipWrapper);
-		if (isTouchDevice) {
-			window.addEventListener('click', handleWindowClick);
-		}
+		// This general listener will deselect the active dot
+		window.addEventListener('click', handleWindowClick);
+
 		return () => {
 			document.body.removeChild(tooltipWrapper);
-			if (isTouchDevice) {
-				window.removeEventListener('click', handleWindowClick);
-			}
+			window.removeEventListener('click', handleWindowClick);
 		};
 	});
 
 	function handleMouseOver(event, officer) {
 		if (isTouchDevice) return;
+		// --- NEW: Clear any pre-selected state as soon as the user hovers anything ---
+		// This makes the user's interaction take priority.
+		activeOfficerId = null;
 		showTooltip(event, officer);
 	}
 
 	function handleMouseOut() {
 		if (isTouchDevice) return;
+		// The activeOfficerId will be null now (from handleMouseOver), so this will work correctly.
 		hideTooltip();
 	}
 
 	function handleDotClick(event, officer) {
-		if (!isTouchDevice) return;
 		event.stopPropagation();
 		if (activeOfficerId === officer.id) {
 			activeOfficerId = null;
@@ -187,18 +228,31 @@
 		tooltipWrapper.style.left = `${finalX}px`;
 
 		let finalY;
-		if (isTouchDevice) {
+		finalY = pageY + offsetY;
+		if (finalY + tooltipRect.height > windowHeight) {
 			finalY = pageY - offsetY - tooltipRect.height;
-			if (finalY < 0) {
-				finalY = pageY + offsetY;
-			}
-		} else {
+		}
+		if (finalY < 0) {
 			finalY = pageY + offsetY;
-			if (finalY + tooltipRect.height > windowHeight) {
-				finalY = pageY - offsetY - tooltipRect.height;
-			}
 		}
 		tooltipWrapper.style.top = `${finalY}px`;
+	}
+
+	function showInitialTooltip(officer) {
+		if (!officer || !chartContainer) return;
+
+		const dotElement = chartContainer.querySelector(`[data-officer-id='${officer.id}']`);
+		if (!dotElement) return;
+
+		activeOfficerId = officer.id;
+
+		const rect = dotElement.getBoundingClientRect();
+		const fakeEvent = {
+			pageX: rect.left + rect.width / 2 + window.scrollX,
+			pageY: rect.top + rect.height / 2 + window.scrollY
+		};
+
+		showTooltip(fakeEvent, officer);
 	}
 
 	onMount(async () => {
@@ -216,8 +270,10 @@
 				})
 				.filter((d) => d && d.officer && d.rank && !isNaN(d.dateObj.getTime()));
 			officerData = processed;
+			// Note: The initial tooltip logic has been moved out of here
 		} catch (e) {
 			error = 'Failed to load officer data.';
+			console.error(e);
 		} finally {
 			isLoading = false;
 		}
@@ -295,12 +351,15 @@
 	{:else if error}
 		<p class="error">{error}</p>
 	{:else if processedData.length}
-		<div class="chart" bind:this={chartContainer}>
+		<!-- NEW: Apply the 'onView' action to the chart container -->
+		<div class="chart" bind:this={chartContainer} use:onView={handleFirstView}>
 			{#each processedData as group (group.weekStart)}
 				<div class="week-column" style="left: {group.positionPercent}%">
 					{#each group.officers as officer, i (officer.id)}
 						<div
 							class="dot"
+							class:selected={activeOfficerId === officer.id}
+							data-officer-id={officer.id}
 							style="background-color: {rankColors[officer.rank] || '#BAB0AC'}"
 							on:mouseover={(e) => handleMouseOver(e, officer)}
 							on:mouseout={handleMouseOut}
@@ -520,7 +579,8 @@
 		transition: all 0.2s;
 	}
 
-	.dot:hover {
+	.dot:hover,
+	.dot.selected {
 		transform: scale(1.4);
 		box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
 		z-index: 10;
@@ -584,10 +644,16 @@
 			font-size: 1.2rem;
 		}
 
-		.chart-caption,
-		.annotation-text {
+		.chart-caption {
 			font-size: 0.8rem;
 		}
+		
+		/* --- START: FIX FOR MOBILE OVERFLOW --- */
+		.annotation-text {
+			font-size: 0.8rem;
+			white-space: normal; /* Allow annotation text to wrap */
+		}
+		/* --- END: FIX FOR MOBILE OVERFLOW --- */
 
 		.chart-footnote {
 			font-size: 11px;
@@ -599,11 +665,15 @@
 			align-items: center;
 			gap: 8px;
 		}
-
+		
+		/* --- START: FIX FOR MOBILE OVERFLOW --- */
 		:global(.tooltip-card) {
-			min-width: 150px;
+			max-width: 220px; /* Constrain the max width of the tooltip */
+			white-space: normal; /* Allow text to wrap inside the tooltip */
 			text-align: center;
+			box-sizing: border-box; /* Ensure padding is included in width */
 		}
+		/* --- END: FIX FOR MOBILE OVERFLOW --- */
 
 		:global(.tooltip-header) {
 			font-size: 0.75rem;

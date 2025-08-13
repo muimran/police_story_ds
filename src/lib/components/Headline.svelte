@@ -185,13 +185,14 @@
     
     /* 2. Made responsive to screen width to fit on one line */
     .line-2 {
-      font-size: 8vw; 
+      font-size: 8vw;
+      white-space: normal; /* FIX: Allow this line to wrap on mobile */
     }
 
     /* 3. Also made responsive, and smaller than line-2 because it's longer */
     .line-3 {
       font-size: 5.2vw;
-      white-space: wrap; /* Keep this to prevent wrapping */
+      white-space: normal; /* FIX: Allow this line to wrap, 'wrap' is not a valid value */
     }
     
     .standfirst-text { 

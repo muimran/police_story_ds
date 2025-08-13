@@ -3,7 +3,6 @@
   import Transfers from '$lib/components/Transfers.svelte';
   import OfficerTable from '$lib/components/OfficerTable.svelte';
   import Absconded from '$lib/components/Absconded.svelte';
-  import TransfersExperiemnt from '$lib/components/TransfersExperiemnt.svelte';
   import Navbar from '$lib/components/NavBar.svelte';
   import Hero from '$lib/components/Hero.svelte';
   import PoliceMapMobile from '$lib/components/PoliceMapSave.svelte';
@@ -389,7 +388,7 @@
   <p>Only one of them, Mohammad Shahidullah, a joint commissioner, has been arrested, but on charges of “extra-judicial killing” of a BNP leader, an incident unrelated to the July uprising.</p>
   <p>The Daily Star has reviewed 97 official notices involving transfer of 1,300 police personnel issued by the police between August 2024 and May 2025.</p>
   
-  <TransfersExperiemnt />
+  <Transfers />
 
   <p>In February this year, 82 senior cops were made Officers on Special Duty (OSD). Eighteen of them had been stationed in the DMP area during the uprising, of whom 13 were ranked DC or higher.</p>
   <p>This suggests that top-ranked officials -- DC and above -- rarely fled or were arrested after August 2024. Instead, the majority were either attached to posts with no active duties or made OSD.</p>
