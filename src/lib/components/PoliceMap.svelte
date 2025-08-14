@@ -31,9 +31,9 @@
 	$: activeAmmoTypesInStep = [...new Set( displayedLayerData.flatMap(layer => Object.keys(layer.totals).filter(type => layer.totals[type] > 0)))];
 	$: sortedTableData = [...displayedLayerData].map(layer => { const total = Object.values(layer.totals).reduce((sum, val) => sum + (val || 0), 0); return { ...layer, total }; }).filter(layer => layer.total > 0).sort((a, b) => b.total - a.total);
 
-	const AMMO_STYLES = { t56: { color: '#d7263d', label: 'Type 56' }, lethal: { color: '#f46a4e', label: 'Lethal' }, rubber_cartridge: { color: '#0077b6', label: 'Rubber Cartridge' }, shotgun_shell: { color: '#5e548e', label: 'Shotgun Shell' }, tear_gas_grenade: { color: '#80b918', 'label': 'Tear Gas' }, baton_rounds: { color: '#fca311', label: 'Baton Rounds' }, non_lethal: { color: '#48cae4', label: 'Non-Lethal' } };
+	const AMMO_STYLES = { t56: { color: '#d7263d', label: 'Type 56' }, lethal: { color: '#f46a4e', label: 'Lethal' }, rubber_cartridge: { color: '#0077b6', label: 'R. Cartridge' }, shotgun_shell: { color: '#5e548e', label: 'Shotgun Shell' }, tear_gas_grenade: { color: '#80b918', 'label': 'Tear Gas' }, baton_rounds: { color: '#fca311', label: 'Baton Rounds' }, non_lethal: { color: '#48cae4', label: 'Non-Lethal' } };
 
-	function handleStepEnter(response) { 
+	function handleStepEnter(response) {
 		activeIndex = response.index;
 	}
 
@@ -55,9 +55,18 @@
 			viewOptions.zoom -= 1;
 			viewOptions.center = [viewOptions.center[0] + 0.015, viewOptions.center[1]];
 		}
-		
+
 		map.flyTo({ ...viewOptions, duration: 1200, essential: true });
-		
+
+        const dhakaBoundaryLayerId = 'dhaka-boundary-layer';
+        if (map.getLayer(dhakaBoundaryLayerId)) {
+            if (chapter.sl == '1' || stepIndex === chapters.length - 1) {
+                map.setLayoutProperty(dhakaBoundaryLayerId, 'visibility', 'visible');
+            } else {
+                map.setLayoutProperty(dhakaBoundaryLayerId, 'visibility', 'none');
+            }
+        }
+
 		if (chapter.visual_cue && chapter.visual_cue.includes('Hasina')) {
 			// Placeholder
 		} else {
@@ -76,13 +85,13 @@
                 activeStarMarkers.set(layer.thana, marker);
             });
         }
-		
+
         const positionedLayers = addDynamicLabelPlacement(chapter.layers, map);
         const labelFeatures = positionedLayers.map(layer => ({
             type: 'Feature', geometry: { type: 'Point', coordinates: layer.coords },
             properties: {
                 thana: layer.thana, highlight: layer.highlight || false,
-                labelOffset: layer.placement.offset, labelAnchor: layer.placement.anchor, 
+                labelOffset: layer.placement.offset, labelAnchor: layer.placement.anchor,
                 has_data: Object.values(layer.totals).some(total => total > 0)
             }
         }));
@@ -100,16 +109,15 @@
                 }
             });
         });
-        
+
         circleFeatures.sort((a, b) => b.properties.total - a.properties.total);
         const circleSource = map.getSource('ammo_circles_source');
         if (circleSource) { circleSource.setData({ type: 'FeatureCollection', features: circleFeatures }); }
 	}
 
-	// --- RESTORED: The original, correct reactive block for updating data ---
 	$: if (chapters.length > 0 && map?.isStyleLoaded()) {
 		if (isInitialLoad) {
-			// Do nothing on the very first load
+			// Do nothing
 		} else {
 			tableVisible = false;
 			setTimeout(() => {
@@ -133,70 +141,93 @@
 		const observer = new IntersectionObserver(([entry]) => { isVisible = entry.isIntersecting; }, { rootMargin: "0px 0px -15% 0px", threshold: 0 });
 		if (graphicContainer) { observer.observe(graphicContainer); }
 
-		const [scrollyRes, amoRes] = await Promise.all([ fetch(`${base}/scrolly.csv`), fetch(`${base}/amo_data.csv`) ]);
+		const [scrollyRes, amoRes, geojsonRes] = await Promise.all([
+			fetch(`${base}/scrolly.csv`),
+			fetch(`${base}/amo_data.csv`),
+			fetch(`${base}/images/dhaka.geojson`)
+		]);
+
 		const scrollyText = await scrollyRes.text();
 		const amoText = await amoRes.text();
-        const cleanedScrollyText = scrollyText.replace(/^\uFEFF/, '');
+		const dhakaGeojsonData = await geojsonRes.json();
+		const cleanedScrollyText = scrollyText.replace(/^\uFEFF/, '');
 		const scrollyData = csvParse(cleanedScrollyText);
 		const amoData = csvParse(amoText);
 
 		const thanaCoords = amoData.reduce((acc, row) => { if (row.thana && !acc[row.thana]) { acc[row.thana] = { lat: +row.lat, lon: +row.lon }; } return acc; }, {});
 		const allThanaNames = [...new Set(amoData.map(d => d.thana).filter(Boolean))];
 
-        chapters = scrollyData.map(step => {
-            let position = (step.position || 'left').toLowerCase();
-            if (position === 'centre') position = 'center';
-            let overlayColor = step.overlay_color?.trim() ? `#${step.overlay_color.replace('#', '')}80` : null;
-            
-            const chapter = {
-                sl: step.sl, textbox: step.textbox, displayDate: formatDateForRibbon(step.date),
-                view: { center: [+step.lon, +step.lat], zoom: +step.zoom },
-                visual_cue: step.visual_cue, position: position, overlay_color: overlayColor, layers: []
-            };
+		chapters = scrollyData.map(step => {
+			let position = (step.position || 'left').toLowerCase();
+			if (position === 'centre') position = 'center';
+			let overlayColor = step.overlay_color?.trim() ? `#${step.overlay_color.replace('#', '')}80` : null;
 
-            let thanasToProcess = (step.thana === "All") 
-                ? allThanaNames 
-                : (step.thana && step.thana !== "0" ? step.thana.split(',').map(t => t.trim()) : []);
+			const chapter = {
+				sl: step.sl, textbox: step.textbox, displayDate: formatDateForRibbon(step.date),
+				view: { center: [+step.lon, +step.lat], zoom: +step.zoom },
+				visual_cue: step.visual_cue, position: position, overlay_color: overlayColor, layers: []
+			};
+			
+			let thanasToProcess = (step.thana === "All") ? allThanaNames : (step.thana && step.thana !== "0" ? step.thana.split(',').map(t => t.trim()) : []);
+			const amoTypes = (step.amo_type && step.amo_type !== '0') ? step.amo_type.split(',').map(t => t.trim()) : [];
+			const stepDateNormalized = normalizeDate(step.date);
+			if (thanasToProcess.length > 0 && amoTypes.length > 0) {
+				thanasToProcess.forEach(thanaName => {
+					if (!thanaCoords[thanaName]) return;
+					const layerData = { thana: thanaName, coords: [thanaCoords[thanaName].lon, thanaCoords[thanaName].lat], totals: {} };
+					const filteredAmo = amoData.filter(d => d.thana === thanaName && normalizeDate(d.date) === stepDateNormalized);
+					amoTypes.forEach(type => {
+						layerData.totals[type] = filteredAmo.reduce((sum, row) => sum + (Number(row[type]) || 0), 0);
+					});
+					chapter.layers.push(layerData);
+				});
+			} else if (thanasToProcess.length > 0) {
+				thanasToProcess.forEach(thanaName => {
+					if (!thanaCoords[thanaName]) return;
+					chapter.layers.push({ thana: thanaName, coords: [thanaCoords[thanaName].lon, thanaCoords[thanaName].lat], totals: {}, highlight: true });
+				});
+			}
+			return chapter;
+		});
 
-            const amoTypes = (step.amo_type && step.amo_type !== '0') ? step.amo_type.split(',').map(t => t.trim()) : [];
-            const stepDateNormalized = normalizeDate(step.date);
+		map = new mapboxgl.Map({ container: mapContainer, style: MAP_STYLE, center: [90.39159, 23.75466], zoom: 11, interactive: false });
 
-            if (thanasToProcess.length > 0 && amoTypes.length > 0) {
-                thanasToProcess.forEach(thanaName => {
-                    if (!thanaCoords[thanaName]) return;
-                    const layerData = { thana: thanaName, coords: [thanaCoords[thanaName].lon, thanaCoords[thanaName].lat], totals: {} };
-                    const filteredAmo = amoData.filter(d => d.thana === thanaName && normalizeDate(d.date) === stepDateNormalized);
-                    amoTypes.forEach(type => {
-                        layerData.totals[type] = filteredAmo.reduce((sum, row) => sum + (Number(row[type]) || 0), 0);
-                    });
-                    chapter.layers.push(layerData);
-                });
-            } else if (thanasToProcess.length > 0) {
-                thanasToProcess.forEach(thanaName => {
-                    if (!thanaCoords[thanaName]) return;
-                    chapter.layers.push({ thana: thanaName, coords: [thanaCoords[thanaName].lon, thanaCoords[thanaName].lat], totals: {}, highlight: true });
-                });
-            }
-            return chapter;
-        });
+		map.on('load', () => {
+			map.addSource('dhaka-boundary', {
+				type: 'geojson',
+				data: dhakaGeojsonData
+			});
+			
+			const firstSymbolLayer = map.getStyle().layers.find(layer => layer.type === 'symbol');
+			const beforeId = firstSymbolLayer ? firstSymbolLayer.id : undefined;
 
-        map = new mapboxgl.Map({ container: mapContainer, style: MAP_STYLE, center: [90.39159, 23.75466], zoom: 11, interactive: false });
+			map.addLayer({
+				id: 'dhaka-boundary-layer',
+				type: 'line',
+				source: 'dhaka-boundary',
+				layout: {
+					'visibility': 'none'
+				},
+				paint: {
+					'line-color': '#d7263d',
+					'line-width': 2,
+					'line-opacity': 0.85
+				}
+			}, beforeId);
 
-        map.on('load', () => {
-            map.addSource('thana_labels_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+			map.addSource('thana_labels_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
 			map.addSource('ammo_circles_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
 			map.addLayer({ id: 'thana-label', type: 'symbol', source: 'thana_labels_source', layout: { 'text-field': ['case', ['any', ['get', 'has_data'], ['get', 'highlight']], ['get', 'thana'], ''], 'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'], 'text-size': 14, 'text-offset': ['get', 'labelOffset'], 'text-anchor': ['get', 'labelAnchor'], 'text-allow-overlap': true, 'text-ignore-placement': true }, paint: { 'text-color': '#000000' } });
 			map.addLayer({ id: 'ammo-circles', type: 'circle', source: 'ammo_circles_source', paint: { 'circle-color': ['match', ['get', 'ammo_type'], ...Object.entries(AMMO_STYLES).flatMap(([type, style]) => [type, style.color]), '#ccc'], 'circle-radius': ['interpolate', ['linear'], ['sqrt', ['get', 'total']], 0, 0, 1, 8, 100, 30, 1000, 75, 10000, 225], 'circle-opacity': 0.7, 'circle-stroke-color': 'white', 'circle-stroke-width': 1, 'circle-stroke-opacity': 1 } });
 			adjustLabelSizeForMobile();
 
-			// --- RESTORED: Initial data setup ---
-            if (chapters.length > 0) {
-                displayedLayerData = chapters[0].layers;
-                isInitialLoad = false;
-                updateMap(0);
-            }
+			if (chapters.length > 0) {
+				displayedLayerData = chapters[0].layers;
+				isInitialLoad = false;
+				updateMap(0);
+			}
 
-            map.on('moveend', () => { if (chapters[activeIndex]) { updateMap(activeIndex); } });
+			map.on('moveend', () => { if (chapters[activeIndex]) { updateMap(activeIndex); } });
 		});
 
 		await tick();
@@ -236,12 +267,12 @@
         <GifOverlay map={map} isActive={!!activeMediaSrc} mediaSrc={activeMediaSrc} lngLat={activeMediaLngLat}/>
         <div class="scrolly-steps">
             {#each chapters as chapter, i}
-                <div class="scrolly-step" 
+                <div class="scrolly-step"
                      data-index={i}
                      class:is-center={chapter.position === 'center'}
                      class:is-right={chapter.position === 'right'}
                 >
-                    <div 
+                    <div
                         class="step-content"
                         class:first-step={i === 0}
                         class:last-step={i === chapters.length - 1}
@@ -256,7 +287,6 @@
                             <img src="{base}/images/t56.png" alt="Type 56 Rifle" class="inline-t56-icon"/>
                         {/if}
 
-                        <!-- RESTORED: This block now correctly displays the mobile legend -->
                         {#if i === activeIndex && chapter.layers.some(layer => Object.values(layer.totals).some(val => val > 0))}
                             <div class="mobile-legend-summary">
                                 {#each activeAmmoTypesInStep as type}
@@ -276,7 +306,6 @@
         </div>
     </div>
 
-    <!-- RESTORED: The desktop legend is now correctly displayed -->
     <div class="legend-container legend-container-desktop" class:visible={isVisible}>
         {#if activeAmmoTypesInStep.length > 0}
             <div class="legend-table-wrapper" style="opacity: {tableVisible ? 1 : 0};">
@@ -297,7 +326,7 @@
                             <tr>
                                 <td>{layer.thana}</td>
                                 {#each activeAmmoTypesInStep as type}
-                                    <td class="total-value">{layer.totals[type] || 0}</td>
+                                    <td class="total-value">{formatNumber(layer.totals[type] || 0)}</td>
                                 {/each}
                             </tr>
                         {/each}
@@ -312,21 +341,18 @@
 	.scrolly-container { position: relative; }
 	.graphic-container { position: sticky; top: 0; height: 100vh; width: 100%; z-index: 1; }
 	#map { width: 100%; height: 100%; }
-	
-	/* --- CHANGED: The main container is a simple, full-width wrapper --- */
+
 	.scrolly-steps {
-		position: relative; 
+		position: relative;
 		z-index: 2;
 	}
 
-	/* --- CHANGED: Each step now controls its own alignment --- */
-	.scrolly-step { 
-		min-height: 100vh; 
-		display: flex; 
+	.scrolly-step {
+		min-height: 100vh;
+		display: flex;
 		align-items: center;
-		/* Default to left alignment */
 		justify-content: flex-start;
-		padding-left: 5vw; /* Use viewport units for better scaling */
+		padding-left: 5vw;
 		padding-right: 5vw;
 	}
 	.scrolly-step.is-center {
@@ -337,21 +363,21 @@
 	}
 
     .step-content {
-        box-sizing: border-box; 
+        box-sizing: border-box;
 		width: 100%;
 		max-width: 360px;
-		padding: 1.5rem; 
+		padding: 1.5rem;
 		background: rgba(255, 255, 255, 0.9);
-        color: #333; 
-		border-radius: 6px; 
+        color: #333;
+		border-radius: 6px;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0,0,0,0.1);
-        border: 1px solid #e0e0e0; 
+        border: 1px solid #e0e0e0;
 		font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        line-height: 1.6; 
-		font-size: 14px; 
+        line-height: 1.6;
+		font-size: 14px;
 		transition: all 0.3s;
     }
-    
+
     :global(.star-marker) {
         clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
         background-color: #d7263d; width: 20px; height: 20px; cursor: pointer;
@@ -362,11 +388,11 @@
 	.step-content.special-overlay {
         background-color: #333;
         color: white;
-        border-color: #555;
 		font-size: 16px;
 		max-width: 450px;
+        border-left: 4px solid #d7263d;
     }
-    
+
 	:global(.step-content.first-step a),
 	:global(.step-content.last-step a),
 	:global(.step-content.special-overlay a) {
@@ -374,13 +400,13 @@
 		text-decoration: underline !important;
 	}
 
-    .first-step .mobile-legend-item, 
+    .first-step .mobile-legend-item,
 	.last-step .mobile-legend-item,
 	.special-overlay .mobile-legend-item { color: #f0f0f0; }
-    .first-step .mobile-legend-total, 
+    .first-step .mobile-legend-total,
 	.last-step .mobile-legend-total,
 	.special-overlay .mobile-legend-total { background-color: #f0f0f0; color: #000; }
-    .first-step .mobile-legend-summary, 
+    .first-step .mobile-legend-summary,
 	.last-step .mobile-legend-summary,
 	.special-overlay .mobile-legend-summary { border-top-color: #555; }
 
@@ -391,51 +417,139 @@
     }
     .step-header-ribbon span { font-weight: 700; font-size: 12px; letter-spacing: 1.5px; font-family: 'Courier New', Courier, monospace; }
 
-    .gradient-top, .gradient-bottom { 
-        position: absolute; left: 0; right: 0; 
-        z-index: 1; pointer-events: none; 
+    .gradient-top, .gradient-bottom {
+        position: absolute; left: 0; right: 0;
+        z-index: 1; pointer-events: none;
     }
     .gradient-top { top: 0; height: 8%; background: linear-gradient(to bottom, white 0%, transparent 100%); }
     .gradient-bottom { bottom: 0; height: 8%; background: linear-gradient(to top, white 0%, transparent 100%); }
 
-    /* RESTORED: Desktop legend styles */
+    /* --- REFINED DESKTOP LEGEND STYLES --- */
     .legend-container-desktop {
-        position: fixed; top: 50%; right: 5%; left: auto; transform: translateY(-50%); z-index: 5;
-        width: 400px; max-height: 90vh; display: flex; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out;
+        position: fixed;
+        /* --- CHANGE: Moved up from the bottom edge --- */
+        bottom: 30px; 
+        right: 20px;
+        left: auto;
+        top: auto;
+        transform: none;
+        z-index: 5;
+        width: 350px;
+        max-height: 45vh;
+        display: flex;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease-in-out;
     }
-    .legend-container-desktop.visible { opacity: 1; pointer-events: auto; }
-    .legend-table-wrapper {
-        width: 100%; overflow: auto; background: white; border-radius: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0,0,0,0.1);
-        border: 1px solid #e0e0e0; transition: opacity 0.25s ease-in-out;
-    }
-    .legend-table { border-collapse: collapse; width: 100%; table-layout: fixed; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    .legend-table th, .legend-table td { padding: 5px 8px; text-align: left; white-space: nowrap; }
-    .legend-table th {
-        border-top: 1px solid #333; border-bottom: 2px solid #333; background: white; color: #555; font-size: 9px;
-        font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; z-index: 10;
-    }
-	.legend-table th:not(:first-child) { text-align: center; padding-right: 15px; }
-    .legend-table tbody tr { border-bottom: 1px solid #e5e5e5; }
-	.legend-table tbody tr:last-child { border-bottom: none; }
-	.legend-table td { font-size: 12px; color: #333; }
-	.thana-header, .legend-table tbody td:first-child {
-        position: sticky; left: 0; background: white; border-right: 1px solid #e5e5e5; width: 115px;
-    }
-	.legend-table tbody td:first-child { font-weight: 600; color: #000; }
-    .legend-table td.total-value { text-align: center; font-family: 'Courier New', Courier, monospace; }
-    .color-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 1px solid #aaa; vertical-align: middle; margin-right: 6px; }
 
-    /* RESTORED: Mobile legend styles */
+    .legend-container-desktop.visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .legend-table-wrapper {
+        width: 100%;
+        overflow: auto;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(4px);
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        border: 1px solid #ccc;
+        transition: opacity 0.25s ease-in-out;
+    }
+
+    .legend-table {
+        border-collapse: collapse;
+        width: 100%;
+        table-layout: auto;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .legend-table th, .legend-table td {
+        padding: 6px 10px;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .legend-table th {
+        border-top: none;
+        border-bottom: 1px solid #aaa;
+        background: transparent;
+        color: #333;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(4px);
+    }
+
+    .legend-table th .color-swatch {
+        width: 12px;
+        height: 12px;
+    }
+
+    .legend-table th:not(:first-child) {
+        text-align: right;
+        padding-right: 15px;
+    }
+
+    .legend-table tbody tr {
+        border-bottom: 1px solid #e5e5e5;
+    }
+
+    .legend-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .legend-table td {
+        font-size: 13px;
+        color: #333;
+    }
+
+    .thana-header, .legend-table tbody td:first-child {
+        position: sticky;
+        left: 0;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(4px);
+        border-right: 1px solid #e5e5e5;
+        width: auto;
+    }
+
+    .legend-table tbody td:first-child {
+        /* --- CHANGE: Softened the thana names --- */
+        font-weight: 500;
+        color: #333;
+    }
+
+    .legend-table td.total-value {
+        text-align: right;
+        font-family: 'Courier New', Courier, monospace;
+    }
+
+    .color-swatch {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 1px solid #aaa;
+        vertical-align: middle;
+        margin-right: 6px;
+    }
+    /* --- END REFINED LEGEND STYLES --- */
+
+
     .mobile-legend-summary { display: none; flex-direction: column; gap: 8px; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; }
     .mobile-legend-item { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 500; color: #555; }
     .mobile-legend-total { font-family: 'Courier New', Courier, monospace; font-weight: bold; color: #000; background-color: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
 
     @media (max-width: 768px) {
-		/* --- CHANGED: This now correctly targets mobile displays --- */
         .legend-container-desktop { display: none; }
         .mobile-legend-summary { display: flex; }
 
-		/* On mobile, all steps are centered */
         .scrolly-step,
 		.scrolly-step.is-center,
 		.scrolly-step.is-right {
