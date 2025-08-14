@@ -18,6 +18,9 @@
 	let graphicContainer;
 	let isVisible = false;
 
+	// --- NEW: A map to hold our custom HTML star markers ---
+	let activeStarMarkers = new Map();
+
 	let activeMediaSrc = '';
 	let activeMediaLngLat = null;
 	let tableVisible = true;
@@ -53,6 +56,26 @@
 		map.flyTo({ ...viewOptions, duration: 1200, essential: true });
 		
 		if (chapter.media_src && chapter.media_lnglat) { activeMediaSrc = chapter.media_src; activeMediaLngLat = chapter.media_lnglat; } else { activeMediaSrc = ''; activeMediaLngLat = null; }
+
+		// --- NEW: Logic to manage HTML star markers ---
+        // First, clear any existing star markers
+        activeStarMarkers.forEach(marker => marker.remove());
+        activeStarMarkers.clear();
+
+        // If it's the specific step (sl=6), create and add the HTML markers
+        if (chapter.sl == '6') {
+            chapter.layers.forEach(layer => {
+                const el = document.createElement('div');
+                el.className = 'star-marker';
+
+                const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
+                    .setLngLat(layer.coords)
+                    .addTo(map);
+
+                activeStarMarkers.set(layer.thana, marker);
+            });
+        }
+		// --- END: New logic for HTML markers ---
 		
         const positionedLayers = addDynamicLabelPlacement(chapter.layers, map);
 
@@ -109,6 +132,15 @@
 			}, 250);
 			updateMap(activeIndex);
 		}
+	}
+
+	let handleResize;
+
+	function adjustLabelSizeForMobile() {
+		if (!map || !map.isStyleLoaded() || !map.getLayer('thana-label')) return;
+		const isMobile = window.innerWidth <= 768;
+		const newSize = isMobile ? 9 : 13;
+		map.setLayoutProperty('thana-label', 'text-size', newSize);
 	}
 
 	onMount(async () => {
@@ -183,12 +215,14 @@
             map.addSource('thana_labels_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
 			map.addSource('ammo_circles_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
 			
+			// --- REMOVED: No longer need the star source or layer here ---
+			
             map.addLayer({ 
                 id: 'thana-label', 
                 type: 'symbol', 
                 source: 'thana_labels_source', 
                 layout: { 'text-field': ['case', ['any', ['get', 'has_data'], ['get', 'highlight']], ['get', 'thana'], ''], 'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'], 'text-size': 14, 'text-offset': ['get', 'labelOffset'], 'text-anchor': ['get', 'labelAnchor'], 'text-allow-overlap': true, 'text-ignore-placement': true }, 
-                paint: { 'text-color': '#ffffff', 'text-halo-color': 'rgba(0, 0, 0, 0.9)', 'text-halo-width': 2 } 
+                paint: { 'text-color': '#000000' } 
             });
 			
             map.addLayer({
@@ -205,6 +239,8 @@
                 }
             });
 
+			adjustLabelSizeForMobile();
+
             if (chapters.length > 0) {
                 displayedLayerData = chapters[0].layers;
                 isInitialLoad = false;
@@ -216,13 +252,26 @@
 
 		await tick();
 		scroller = scrollama();
+
+		handleResize = () => {
+			if(scroller) scroller.resize();
+			adjustLabelSizeForMobile();
+		};
+		
 		scroller.setup({ step: '.scrolly-step', offset: 0.6, progress: true, debug: false }).onStepEnter(handleStepEnter).onStepProgress(handleStepProgress);
-		window.addEventListener('resize', scroller.resize);
+		window.addEventListener('resize', handleResize);
 	});
 
 	onDestroy(() => {
+        // --- NEW: Also clear HTML markers on destroy ---
+        activeStarMarkers.forEach(marker => marker.remove());
 		if (map) map.remove();
-		if (scroller) { window.removeEventListener('resize', scroller.resize); scroller.destroy(); }
+		if (handleResize) {
+			window.removeEventListener('resize', handleResize);
+		}
+		if (scroller) { 
+			scroller.destroy(); 
+		}
 	});
 
     function getStepTotalForAmmoType(ammoType) {
@@ -334,7 +383,7 @@
 	.scrolly-step { min-height: 100vh; display: flex; align-items: center; }
 
     .step-content {
-        box-sizing: border-box; /* This is the fix */
+        box-sizing: border-box; 
         width: 100%;
         padding: 1.5rem;
         background: rgba(255, 255, 255, 0.9);
@@ -347,39 +396,36 @@
         font-size: 14px;
         transition: background-color 0.3s, color 0.3s;
     }
+    
+    /* --- NEW: CSS for the Star Marker --- */
+    :global(.star-marker) {
+        /* Using clip-path to create the star shape */
+        clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        background-color: #d7263d; /* Red color */
+        width: 20px;  /* Size of the star */
+        height: 20px; /* Size of the star */
+        cursor: pointer;
+    }
+    /* --- END: CSS for Star Marker --- */
 
-    /* --- START: STYLES FOR FIRST AND LAST STEPS --- */
     .step-content.first-step,
     .step-content.last-step {
-        background-color: #333; /* Using ribbon color */
+        background-color: #333;
         color: white;
-        border-color: #555; /* A slightly lighter border for definition */
+        border-color: #555;
     }
     
     .first-step .mobile-legend-item,
-    .last-step .mobile-legend-item {
-        color: #f0f0f0;
-    }
+    .last-step .mobile-legend-item { color: #f0f0f0; }
 
     .first-step .mobile-legend-total,
-    .last-step .mobile-legend-total {
-        background-color: #f0f0f0;
-        color: #000;
-    }
+    .last-step .mobile-legend-total { background-color: #f0f0f0; color: #000; }
     
     .first-step .mobile-legend-summary,
-    .last-step .mobile-legend-summary {
-        border-top-color: #555;
-    }
-    /* --- END: STYLES FOR FIRST AND LAST STEPS --- */
+    .last-step .mobile-legend-summary { border-top-color: #555; }
 
 
-    .inline-t56-icon {
-        display: block;
-        width: 100%;
-        height: auto;
-        margin-top: 1.5rem;
-    }
+    .inline-t56-icon { display: block; width: 100%; height: auto; margin-top: 1.5rem; }
 
     .step-header-ribbon {
         background-color: #333;
@@ -416,10 +462,7 @@
         transition: opacity 0.3s ease-in-out;
     }
     
-    .legend-container-desktop.visible {
-        opacity: 1;
-        pointer-events: auto;
-    }
+    .legend-container-desktop.visible { opacity: 1; pointer-events: auto; }
     
     .legend-table-wrapper {
         width: 100%;
@@ -437,11 +480,7 @@
         table-layout: fixed;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-    .legend-table th, .legend-table td {
-        padding: 5px 8px;
-        text-align: left;
-        white-space: nowrap;
-    }
+    .legend-table th, .legend-table td { padding: 5px 8px; text-align: left; white-space: nowrap; }
     .legend-table th {
         border-top: 1px solid #333;
         border-bottom: 2px solid #333;
@@ -456,17 +495,11 @@
         z-index: 10;
     }
 
-	.legend-table th:not(:first-child) {
-		text-align: center;
-        padding-right: 15px;
-	}
+	.legend-table th:not(:first-child) { text-align: center; padding-right: 15px; }
 
     .legend-table tbody tr { border-bottom: 1px solid #e5e5e5; }
 	.legend-table tbody tr:last-child { border-bottom: none; }
-	.legend-table td { 
-		font-size: 12px;
-		color: #333; 
-	}
+	.legend-table td { font-size: 12px; color: #333; }
 
 	.thana-header, .legend-table tbody td:first-child {
         position: sticky;
@@ -489,61 +522,21 @@
     }
 
     /* --- MOBILE LEGEND STYLES --- */
-    .mobile-legend-summary {
-        display: none;
-        flex-direction: column;
-        gap: 8px;
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid #e0e0e0;
-    }
-
-    .mobile-legend-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 12px;
-        font-weight: 500;
-        color: #555;
-    }
-
-    .mobile-legend-total {
-        font-family: 'Courier New', Courier, monospace;
-        font-weight: bold;
-        color: #000;
-        background-color: #f0f0f0;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 12px;
-    }
+    .mobile-legend-summary { display: none; flex-direction: column; gap: 8px; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; }
+    .mobile-legend-item { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 500; color: #555; }
+    .mobile-legend-total { font-family: 'Courier New', Courier, monospace; font-weight: bold; color: #000; background-color: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
 
     /* --- Media Query for Mobile layout --- */
     @media (max-width: 768px) {
-        .legend-container-desktop {
-            display: none;
-        }
-
-        .mobile-legend-summary {
-            display: flex;
-        }
-
-        .scrolly-steps {
-            max-width: 90%;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .scrolly-step {
-            flex-direction: column;
-            justify-content: center;
-            min-height: 120vh;
-        }
-        .legend-table th {
-            font-size: 8px;
-            padding: 4px 6px;
-        }
-        .legend-table td {
-            font-size: 11px;
-            padding: 4px 6px;
-        }
+        .legend-container-desktop { display: none; }
+        .mobile-legend-summary { display: flex; }
+        .scrolly-steps { max-width: 90%; margin-left: auto; margin-right: auto; }
+        .scrolly-step { flex-direction: column; justify-content: center; min-height: 120vh; }
+        .legend-table th { font-size: 8px; padding: 4px 6px; }
+        .legend-table td { font-size: 11px; padding: 4px 6px; }
+        :global(.star-marker) {
+        width: 16px;  /* Smaller size for mobile */
+        height: 16px; /* Smaller size for mobile */
+    }
     }
 </style>

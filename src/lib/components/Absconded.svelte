@@ -20,7 +20,24 @@
 
 	const TARGET_OFFICER_NAME = 'Mohammad Harun Or Rashid, BPM-Bar, PPM-Bar';
 
-	// --- NEW: Svelte Action for Intersection Observer ---
+	// --- NEW: Function to preload all images ---
+	// This will trigger the browser to download and cache the images
+	// without actually displaying them on the page.
+	function preloadImages() {
+		if (!officerData || officerData.length === 0) return;
+
+		officerData.forEach((officer) => {
+			// Construct the URL exactly as you do in the tooltip
+			const imageUrl = `${base}/images/absconded/${officer.id}.jpeg`;
+
+			// Create a new Image object in memory. Setting its 'src'
+			// is enough to make the browser start downloading it.
+			const img = new Image();
+			img.src = imageUrl;
+		});
+	}
+
+	// Svelte Action for Intersection Observer.
 	// This function runs when an element is created.
 	// It triggers a callback when the element scrolls into view.
 	function onView(node, callback) {
@@ -47,8 +64,13 @@
 		};
 	}
 
-	// --- NEW: Function to run when chart comes into view ---
-	async function handleFirstView() {
+	// --- MODIFIED: This function now handles all logic for when the chart becomes visible ---
+	async function handleChartInView() {
+		// 1. Start preloading all images as soon as the chart is visible.
+		// This is the key change for instant image loading on hover.
+		preloadImages();
+
+		// 2. Continue with the existing logic to show the initial tooltip.
 		const targetOfficer = officerData.find((o) => o.officer === TARGET_OFFICER_NAME);
 
 		if (targetOfficer) {
@@ -162,7 +184,6 @@
 		tooltipWrapper = document.createElement('div');
 		tooltipWrapper.className = 'tooltip-container';
 		document.body.appendChild(tooltipWrapper);
-		// This general listener will deselect the active dot
 		window.addEventListener('click', handleWindowClick);
 
 		return () => {
@@ -173,15 +194,12 @@
 
 	function handleMouseOver(event, officer) {
 		if (isTouchDevice) return;
-		// --- NEW: Clear any pre-selected state as soon as the user hovers anything ---
-		// This makes the user's interaction take priority.
 		activeOfficerId = null;
 		showTooltip(event, officer);
 	}
 
 	function handleMouseOut() {
 		if (isTouchDevice) return;
-		// The activeOfficerId will be null now (from handleMouseOver), so this will work correctly.
 		hideTooltip();
 	}
 
@@ -270,7 +288,6 @@
 				})
 				.filter((d) => d && d.officer && d.rank && !isNaN(d.dateObj.getTime()));
 			officerData = processed;
-			// Note: The initial tooltip logic has been moved out of here
 		} catch (e) {
 			error = 'Failed to load officer data.';
 			console.error(e);
@@ -351,8 +368,8 @@
 	{:else if error}
 		<p class="error">{error}</p>
 	{:else if processedData.length}
-		<!-- NEW: Apply the 'onView' action to the chart container -->
-		<div class="chart" bind:this={chartContainer} use:onView={handleFirstView}>
+		<!-- --- MODIFIED: The 'use:onView' action now calls our new combined function --- -->
+		<div class="chart" bind:this={chartContainer} use:onView={handleChartInView}>
 			{#each processedData as group (group.weekStart)}
 				<div class="week-column" style="left: {group.positionPercent}%">
 					{#each group.officers as officer, i (officer.id)}
@@ -648,12 +665,10 @@
 			font-size: 0.8rem;
 		}
 		
-		/* --- START: FIX FOR MOBILE OVERFLOW --- */
 		.annotation-text {
 			font-size: 0.8rem;
-			white-space: normal; /* Allow annotation text to wrap */
+			white-space: normal;
 		}
-		/* --- END: FIX FOR MOBILE OVERFLOW --- */
 
 		.chart-footnote {
 			font-size: 11px;
@@ -666,14 +681,12 @@
 			gap: 8px;
 		}
 		
-		/* --- START: FIX FOR MOBILE OVERFLOW --- */
 		:global(.tooltip-card) {
-			max-width: 220px; /* Constrain the max width of the tooltip */
-			white-space: normal; /* Allow text to wrap inside the tooltip */
+			max-width: 220px;
+			white-space: normal;
 			text-align: center;
-			box-sizing: border-box; /* Ensure padding is included in width */
+			box-sizing: border-box;
 		}
-		/* --- END: FIX FOR MOBILE OVERFLOW --- */
 
 		:global(.tooltip-header) {
 			font-size: 0.75rem;

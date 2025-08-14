@@ -5,13 +5,11 @@
   import Absconded from '$lib/components/Absconded.svelte';
   import Navbar from '$lib/components/NavBar.svelte';
   import Hero from '$lib/components/Hero.svelte';
-  import PoliceMapMobile from '$lib/components/PoliceMapSave.svelte';
   import { page } from '$app/stores';
   import { base } from '$app/paths'; 
   import Headline from '$lib/components/Headline.svelte';
   import { slide } from 'svelte/transition';
 
-  export let data;
 
   // State for collapsible sections
   let methodologyOpen = false;
@@ -30,8 +28,8 @@
   <!-- Primary Meta Tags -->
   <title>Commanders of crackdown: Police leadership during July uprising uncovered | The Daily Star</title>
   <meta name="description" content="July 2024 Dhaka Police Shootings: Uncover the officers and orders behind the July 2024 Bangladesh massacre, where police gunfire left hundreds dead and key commanders fled justice." />
-  <meta name="author" content="  " />
-  <meta name="keywords" content="July 2024 Bangladesh protests, Bangladesh quota protest crackdown, Sheikh Hasina lethal force order, July 2024 Dhaka police shootings, Bangladesh police live fire protest, Jatrabari protest killings, Dhaka student protest deaths, Bangladesh police massacre July 2024, UN OHCHR Bangladesh protest report, Dhaka Metropolitan Police FIRs" />
+  <meta name="author" content="Keero Adhnan Ahmed, Muhammad Imran" />
+  <meta name="keywords" content="July 2024 Bangladesh protests, Bangladesh quota protest crackdown, Sheikh Hasina lethal force order, July 2024 Dhaka police shootings, Bangladesh police live fire protest, Jatrabari protest killings, Dhaka student protest deaths, Bangladesh police massacre July 2024, UN OHCHR Bangladesh protest report, Dhaka Metropolitan Police FIRs, Data Visualisation, Data Journalism" />
   
   <!-- Open Graph / Facebook -->
   <meta property="og:title" content="Commanders of crackdown: Police leadership during July uprising uncovered | The Daily Star" />
