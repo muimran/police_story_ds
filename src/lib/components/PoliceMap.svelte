@@ -91,8 +91,11 @@
         const labelFeatures = positionedLayers.map(layer => ({
             type: 'Feature', geometry: { type: 'Point', coordinates: layer.coords },
             properties: {
-                thana: layer.thana, highlight: layer.highlight || false,
-                labelOffset: layer.placement.offset, labelAnchor: layer.placement.anchor,
+                thana: layer.thana,
+                highlight: layer.highlight || false,
+                labelOffset: layer.placement ? layer.placement.offset : [0, 0],
+                labelAnchor: layer.placement ? layer.placement.anchor : 'center',
+                showLabel: layer.showLabel,
                 has_data: Object.values(layer.totals).some(total => total > 0)
             }
         }));
@@ -134,7 +137,7 @@
 	function adjustLabelSizeForMobile() {
 		if (!map || !map.isStyleLoaded() || !map.getLayer('thana-label')) return;
 		const isMobile = window.innerWidth <= 768;
-		const newSize = isMobile ? 9 : 13;
+		const newSize = isMobile ? 9 : 12;
 		map.setLayoutProperty('thana-label', 'text-size', newSize);
 	}
 
@@ -191,13 +194,9 @@
 			return chapter;
 		});
 
-		// --- FIX STARTS HERE ---
-		// Set the initial overlay color based on the first chapter's data.
-		// This ensures the overlay is visible from the very start, before the map even loads.
 		if (chapters.length > 0 && chapters[0].overlay_color) {
 			activeOverlayColor = chapters[0].overlay_color;
 		}
-		// --- FIX ENDS HERE ---
 
 		map = new mapboxgl.Map({ container: mapContainer, style: MAP_STYLE, center: [90.38789, 23.7780453], zoom: 10, interactive: false });
 
@@ -206,18 +205,23 @@
 			map.addSource('thana_labels_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
 			map.addSource('ammo_circles_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
 			
-			const firstSymbolLayer = map.getStyle().layers.find(layer => layer.type === 'symbol');
-			const beforeId = firstSymbolLayer ? firstSymbolLayer.id : undefined;
-
 			const isVisibleOnFirstLoad = chapters.length > 0 && chapters[0].sl === '1';
 
 			map.addLayer({ 
 				id: 'thana-label', 
 				type: 'symbol', 
 				source: 'thana_labels_source', 
-				layout: { 'text-field': ['case', ['any', ['get', 'has_data'], ['get', 'highlight']], ['get', 'thana'], ''], 'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'], 'text-size': 14, 'text-offset': ['get', 'labelOffset'], 'text-anchor': ['get', 'labelAnchor'], 'text-allow-overlap': true, 'text-ignore-placement': true }, 
+				layout: { 
+                    'text-field': ['case', ['get', 'showLabel'], ['get', 'thana'], ''],
+					'text-font': ['Open Sans SemiBold', 'Arial Unicode MS Regular'], 
+					'text-size': 12, 
+					'text-offset': ['get', 'labelOffset'], 
+					'text-anchor': ['get', 'labelAnchor'], 
+					'text-allow-overlap': true, 
+					'text-ignore-placement': true 
+				}, 
 				paint: { 'text-color': '#000000' } 
-			}, beforeId);
+			});
 
 			map.addLayer({ 
 				id: 'ammo-circles', 
@@ -267,7 +271,78 @@
 
     function getStepTotalForAmmoType(ammoType) { if (!chapters[activeIndex]?.layers) return 0; return chapters[activeIndex].layers.reduce((sum, layer) => sum + (layer.totals[ammoType] || 0), 0); }
     function formatNumber(num) { return num.toLocaleString('en-US'); }
-	function addDynamicLabelPlacement(layers, mapInstance) { if (!layers || layers.length === 0) return []; const COLLISION_THRESHOLD_PX = 60; const defaultPlacement = { anchor: 'right', offset: [-1.5, 0] }; const alternativePlacement = { anchor: 'left', offset: [1.5, 0] }; const points = layers.map(layer => ({ ...layer, screenCoords: mapInstance.project(layer.coords) })).sort((a, b) => a.screenCoords.x - b.screenCoords.x); for (let i = 0; i < points.length; i++) { points[i].placement = defaultPlacement; for (let j = 0; j < i; j++) { const dist = Math.sqrt(Math.pow(points[i].screenCoords.x - points[j].screenCoords.x, 2) + Math.pow(points[i].screenCoords.y - points[j].screenCoords.y, 2)); if (dist < COLLISION_THRESHOLD_PX) { points[i].placement = alternativePlacement; break; } } } return points; }
+
+	function addDynamicLabelPlacement(layers, mapInstance) {
+		if (!layers || layers.length === 0) return [];
+
+		const FONT_SIZE = 12;
+		const AVG_CHAR_WIDTH = FONT_SIZE * 0.6;
+		const LABEL_HEIGHT = FONT_SIZE;
+		const PADDING = 4;
+
+		const potentialPlacements = [
+			{ anchor: 'left', offset: [0.8, 0] },
+			{ anchor: 'right', offset: [-0.8, 0] },
+			{ anchor: 'bottom', offset: [0, -1.2] },
+			{ anchor: 'top', offset: [0, 1.2] },
+			{ anchor: 'bottom-left', offset: [0.7, -0.7] },
+			{ anchor: 'top-left', offset: [0.7, 0.7] },
+			{ anchor: 'bottom-right', offset: [-0.7, -0.7] },
+			{ anchor: 'top-right', offset: [-0.7, 0.7] }
+		];
+
+		const placedLabelBounds = [];
+
+		function doBboxesOverlap(box1, box2) {
+			return !(box1.x2 < box2.x1 || box1.x1 > box2.x2 || box1.y2 < box2.y1 || box1.y1 > box2.y2);
+		}
+
+		function calculateLabelBbox(point, placement) {
+			const labelWidth = (point.thana.length * AVG_CHAR_WIDTH) + PADDING * 2;
+			const labelHeight = LABEL_HEIGHT + PADDING * 2;
+			const offsetX = placement.offset[0] * FONT_SIZE;
+			const offsetY = placement.offset[1] * FONT_SIZE;
+
+			let x1 = point.screenCoords.x + offsetX;
+			let y1 = point.screenCoords.y + offsetY;
+			
+			if (placement.anchor.includes('right')) {
+				x1 -= labelWidth;
+			} else if (!placement.anchor.includes('left')) {
+				x1 -= labelWidth / 2;
+			}
+			if (placement.anchor.includes('bottom')) {
+				y1 -= labelHeight;
+			} else if (!placement.anchor.includes('top')) {
+				y1 -= labelHeight / 2;
+			}
+			return { x1: x1, y1: y1, x2: x1 + labelWidth, y2: y1 + labelHeight };
+		}
+
+		const points = layers.map(layer => {
+			const total = Object.values(layer.totals).reduce((sum, val) => sum + (val || 0), 0);
+			return { ...layer, total: total, screenCoords: mapInstance.project(layer.coords) };
+		}).sort((a, b) => b.total - a.total);
+
+		return points.map(point => {
+			let chosenPlacement = null;
+			for (const placement of potentialPlacements) {
+				const bbox = calculateLabelBbox(point, placement);
+				const isColliding = placedLabelBounds.some(existingBbox => doBboxesOverlap(bbox, existingBbox));
+				if (!isColliding) {
+					chosenPlacement = placement;
+					placedLabelBounds.push(bbox);
+					break;
+				}
+			}
+			return {
+				...point,
+				placement: chosenPlacement,
+				showLabel: (!!chosenPlacement || point.highlight) && (point.total > 0 || point.highlight)
+			};
+		});
+	}
+
     function normalizeDate(dateString) { if (!dateString || typeof dateString !== 'string') return ''; const parts = dateString.split('/'); if (parts.length === 3) { const day = parts[0].padStart(2, '0'); const month = parts[1].padStart(2, '0'); let year = parts[2]; if (year.length === 2) year = `20${year}`; return `${day}/${month}/${year}`; } return dateString; }
     function formatDateForRibbon(dateString) { if (!dateString || typeof dateString !== 'string') return ''; const parts = dateString.split('/'); if (parts.length === 3) { const monthNames = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ]; const day = parseInt(parts[0], 10); const monthIndex = parseInt(parts[1], 10) - 1; if (monthIndex >= 0 && monthIndex < 12) { const monthName = monthNames[monthIndex]; return `${monthName} ${day}`; } } return ''; }
 
@@ -456,7 +531,7 @@
     /* --- REFINED DESKTOP LEGEND STYLES --- */
     .legend-container-desktop {
         position: fixed;
-        bottom: 30px; 
+        bottom: 40px; /* Changed from 30px to move it up */
         right: 20px;
         left: auto;
         top: auto;
@@ -492,7 +567,8 @@
 		backdrop-filter: var(--glass-blur);
         border-radius: 8px;
         border: 1px solid var(--glass-border-color);
-		box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+		
+        /* box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);  */
         transition: opacity 0.25s ease-in-out;
     }
 
@@ -599,5 +675,25 @@
 		}
         .scrolly-step { flex-direction: column; justify-content: center; min-height: 120vh; }
         :global(.star-marker) { width: 16px; height: 16px; }
+
+        /* --- ADDED FOR MOBILE TEXT BOX SIZING --- */
+        .step-content {
+            font-size: 13px;
+            max-width: 320px;
+            padding: 1.2rem;
+        }
+
+        .step-content.first-step,
+        .step-content.last-step,
+        .step-content.special-overlay {
+            font-size: 14px;
+        }
+
+        .step-header-ribbon {
+            margin: -1.2rem -1.2rem 1.2rem -1.2rem;
+            padding-left: 1.2rem;
+            padding-right: 1.2rem;
+        }
+        /* --- END OF ADDED CODE --- */
     }
 </style>
