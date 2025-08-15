@@ -30,6 +30,7 @@
 
 	$: activeAmmoTypesInStep = [...new Set( displayedLayerData.flatMap(layer => Object.keys(layer.totals).filter(type => layer.totals[type] > 0)))];
 	$: sortedTableData = [...displayedLayerData].map(layer => { const total = Object.values(layer.totals).reduce((sum, val) => sum + (val || 0), 0); return { ...layer, total }; }).filter(layer => layer.total > 0).sort((a, b) => b.total - a.total);
+	$: columnTotals = activeAmmoTypesInStep.reduce((acc, type) => { acc[type] = sortedTableData.reduce((sum, layer) => sum + (layer.totals[type] || 0), 0); return acc; }, {});
 
 	const AMMO_STYLES = { t56: { color: '#d7263d', label: 'Type 56' }, lethal: { color: '#f46a4e', label: 'Lethal' }, rubber_cartridge: { color: '#0077b6', label: 'R. Cartridge' }, shotgun_shell: { color: '#5e548e', label: 'Shotgun Shell' }, tear_gas_grenade: { color: '#80b918', 'label': 'Tear Gas' }, baton_rounds: { color: '#fca311', label: 'Baton Rounds' }, non_lethal: { color: '#48cae4', label: 'Non-Lethal' } };
 
@@ -351,6 +352,14 @@
                             </tr>
                         {/each}
                     </tbody>
+					<tfoot>
+						<tr>
+							<td>Total</td>
+							{#each activeAmmoTypesInStep as type}
+								<td class="total-value">{formatNumber(columnTotals[type] || 0)}</td>
+							{/each}
+						</tr>
+					</tfoot>
                 </table>
             </div>
         {/if}
@@ -447,7 +456,6 @@
     /* --- REFINED DESKTOP LEGEND STYLES --- */
     .legend-container-desktop {
         position: fixed;
-        /* --- CHANGE: Moved up from the bottom edge --- */
         bottom: 30px; 
         right: 20px;
         left: auto;
@@ -455,7 +463,7 @@
         transform: none;
         z-index: 5;
         width: 350px;
-        max-height: 45vh;
+        max-height: 53vh;
         display: flex;
         opacity: 0;
         pointer-events: none;
@@ -467,14 +475,24 @@
         pointer-events: auto;
     }
 
+	/* === UNIFIED FROSTED GLASS EFFECT START === */
+	:root {
+		/* --- SINGLE CONTROL PANEL FOR FROSTED GLASS --- */
+		--glass-bg: rgba(255, 255, 255, 0.2);
+		--glass-blur: blur(10px);
+		--glass-border-color: rgba(255, 255, 255, 0.25);
+		--glass-separator-color: rgba(0, 0, 0, 0.15);
+		--glass-text-color: #666; /* MODIFIED: Was #333, now lighter gray */
+		--glass-text-color-header: #333;
+	}
+
     .legend-table-wrapper {
         width: 100%;
         overflow: auto;
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(4px);
-        border-radius: 6px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        border: 1px solid #ccc;
+		backdrop-filter: var(--glass-blur);
+        border-radius: 8px;
+        border: 1px solid var(--glass-border-color);
+		box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
         transition: opacity 0.25s ease-in-out;
     }
 
@@ -489,77 +507,81 @@
         padding: 6px 10px;
         text-align: left;
         white-space: nowrap;
+		background: var(--glass-bg);
+		border: none;
     }
 
+	/* --- STICKY ELEMENT STYLES --- */
     .legend-table th {
-        border-top: none;
-        border-bottom: 1px solid #aaa;
-        background: transparent;
-        color: #333;
-        font-size: 10px;
+        font-size: 9px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         position: sticky;
         top: 0;
         z-index: 10;
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(4px);
+        color: var(--glass-text-color-header);
+		box-shadow: 0 1px 0 0 var(--glass-separator-color);
+    }
+	
+	.legend-table tfoot {
+		position: sticky;
+		bottom: 0;
+		z-index: 10;
+	}
+	.legend-table tfoot td {
+		font-weight: 700;
+		font-size: 12px;
+		color: var(--glass-text-color-header);
+		box-shadow: 0 -1px 0 0 var(--glass-separator-color);
+	}
+	
+	.thana-header, 
+	.legend-table tbody td:first-child,
+	.legend-table tfoot td:first-child {
+		position: sticky;
+		left: 0;
+		z-index: 5;
+		box-shadow: 1px 0 0 0 var(--glass-separator-color);
+	}
+
+	.legend-table th:first-child {
+		z-index: 11;
+		box-shadow: 1px 0 0 0 var(--glass-separator-color), 0 1px 0 0 var(--glass-separator-color);
+	}
+	.legend-table tfoot td:first-child {
+		z-index: 11;
+		box-shadow: 1px 0 0 0 var(--glass-separator-color), 0 -1px 0 0 var(--glass-separator-color);
+	}
+
+	/* --- BODY ROW STYLES --- */
+    .legend-table td {
+        font-size: 11px; /* MODIFIED: Was 12px, now smaller */
+        color: var(--glass-text-color);
+    }
+    .legend-table tbody td:first-child {
+        font-weight: 500;
     }
 
-    .legend-table th .color-swatch {
-        width: 12px;
-        height: 12px;
-    }
-
-    .legend-table th:not(:first-child) {
+	/* --- OTHER STYLES --- */
+    .legend-table th:not(:first-child),
+	.legend-table td.total-value {
         text-align: right;
         padding-right: 15px;
     }
-
-    .legend-table tbody tr {
-        border-bottom: 1px solid #e5e5e5;
-    }
-
-    .legend-table tbody tr:last-child {
-        border-bottom: none;
-    }
-
-    .legend-table td {
-        font-size: 13px;
-        color: #333;
-    }
-
-    .thana-header, .legend-table tbody td:first-child {
-        position: sticky;
-        left: 0;
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(4px);
-        border-right: 1px solid #e5e5e5;
-        width: auto;
-    }
-
-    .legend-table tbody td:first-child {
-        /* --- CHANGE: Softened the thana names --- */
-        font-weight: 500;
-        color: #333;
-    }
-
-    .legend-table td.total-value {
-        text-align: right;
+	.legend-table td.total-value {
         font-family: 'Courier New', Courier, monospace;
     }
-
     .color-swatch {
         display: inline-block;
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        border: 1px solid #aaa;
+        border: 1px solid rgba(0,0,0,0.2);
         vertical-align: middle;
         margin-right: 6px;
     }
-    /* --- END REFINED LEGEND STYLES --- */
+	/* === UNIFIED FROSTED GLASS EFFECT END === */
 
 
     .mobile-legend-summary { display: none; flex-direction: column; gap: 8px; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; }
