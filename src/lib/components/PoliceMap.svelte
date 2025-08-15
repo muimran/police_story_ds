@@ -190,35 +190,55 @@
 			return chapter;
 		});
 
-		map = new mapboxgl.Map({ container: mapContainer, style: MAP_STYLE, center: [90.39159, 23.75466], zoom: 11, interactive: false });
+		// --- FIX STARTS HERE ---
+		// Set the initial overlay color based on the first chapter's data.
+		// This ensures the overlay is visible from the very start, before the map even loads.
+		if (chapters.length > 0 && chapters[0].overlay_color) {
+			activeOverlayColor = chapters[0].overlay_color;
+		}
+		// --- FIX ENDS HERE ---
+
+		map = new mapboxgl.Map({ container: mapContainer, style: MAP_STYLE, center: [90.38789, 23.7780453], zoom: 10, interactive: false });
 
 		map.on('load', () => {
-			map.addSource('dhaka-boundary', {
-				type: 'geojson',
-				data: dhakaGeojsonData
-			});
+			map.addSource('dhaka-boundary', { type: 'geojson', data: dhakaGeojsonData });
+			map.addSource('thana_labels_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+			map.addSource('ammo_circles_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
 			
 			const firstSymbolLayer = map.getStyle().layers.find(layer => layer.type === 'symbol');
 			const beforeId = firstSymbolLayer ? firstSymbolLayer.id : undefined;
+
+			const isVisibleOnFirstLoad = chapters.length > 0 && chapters[0].sl === '1';
+
+			map.addLayer({ 
+				id: 'thana-label', 
+				type: 'symbol', 
+				source: 'thana_labels_source', 
+				layout: { 'text-field': ['case', ['any', ['get', 'has_data'], ['get', 'highlight']], ['get', 'thana'], ''], 'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'], 'text-size': 14, 'text-offset': ['get', 'labelOffset'], 'text-anchor': ['get', 'labelAnchor'], 'text-allow-overlap': true, 'text-ignore-placement': true }, 
+				paint: { 'text-color': '#000000' } 
+			}, beforeId);
+
+			map.addLayer({ 
+				id: 'ammo-circles', 
+				type: 'circle', 
+				source: 'ammo_circles_source', 
+				paint: { 'circle-color': ['match', ['get', 'ammo_type'], ...Object.entries(AMMO_STYLES).flatMap(([type, style]) => [type, style.color]), '#ccc'], 'circle-radius': ['interpolate', ['linear'], ['sqrt', ['get', 'total']], 0, 0, 1, 8, 100, 30, 1000, 75, 10000, 225], 'circle-opacity': 0.7, 'circle-stroke-color': 'white', 'circle-stroke-width': 1, 'circle-stroke-opacity': 1 } 
+			}, 'thana-label');
 
 			map.addLayer({
 				id: 'dhaka-boundary-layer',
 				type: 'line',
 				source: 'dhaka-boundary',
 				layout: {
-					'visibility': 'none'
+					'visibility': isVisibleOnFirstLoad ? 'visible' : 'none'
 				},
 				paint: {
 					'line-color': '#d7263d',
 					'line-width': 2,
 					'line-opacity': 0.85
 				}
-			}, beforeId);
+			}, 'ammo-circles');
 
-			map.addSource('thana_labels_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-			map.addSource('ammo_circles_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-			map.addLayer({ id: 'thana-label', type: 'symbol', source: 'thana_labels_source', layout: { 'text-field': ['case', ['any', ['get', 'has_data'], ['get', 'highlight']], ['get', 'thana'], ''], 'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'], 'text-size': 14, 'text-offset': ['get', 'labelOffset'], 'text-anchor': ['get', 'labelAnchor'], 'text-allow-overlap': true, 'text-ignore-placement': true }, paint: { 'text-color': '#000000' } });
-			map.addLayer({ id: 'ammo-circles', type: 'circle', source: 'ammo_circles_source', paint: { 'circle-color': ['match', ['get', 'ammo_type'], ...Object.entries(AMMO_STYLES).flatMap(([type, style]) => [type, style.color]), '#ccc'], 'circle-radius': ['interpolate', ['linear'], ['sqrt', ['get', 'total']], 0, 0, 1, 8, 100, 30, 1000, 75, 10000, 225], 'circle-opacity': 0.7, 'circle-stroke-color': 'white', 'circle-stroke-width': 1, 'circle-stroke-opacity': 1 } });
 			adjustLabelSizeForMobile();
 
 			if (chapters.length > 0) {
