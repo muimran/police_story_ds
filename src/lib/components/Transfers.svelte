@@ -57,11 +57,10 @@
 
     const MOBILE_SCROLLER_CONFIG = {
         step: '.step',
-        offset: 1, // Kept the same for identical behavior, but is now separate
+        offset: 1, 
         debug: false
     };
 
-    // This variable will hold the current, active scrollama instance.
     let activeScroller;
 
 	// --- Scrollytelling Data ---
@@ -83,8 +82,12 @@
 			description: 'These officers were reassigned to 21 different outposts, which we grouped into five categories. 45% of the senior-most officers (DC or above) are transferred to range DIG’s offices (central and regional administration). The largest share of transfers overall went to specialized operational units such as RAB and APBn.'
 		},
 		{
-			title: 'A Question of Attachment',
-			description: '14% of all transferred officers were “attached” to their new outposts. In police terminology, an attached officer has no assigned duties or post and is merely stationed at a location—effectively sidelined without formal suspension. Notably, half of all DCs and higher-ranked officers ended up in this attached status.'
+			title: 'Sidelined Officers',
+			description: 'A significant portion of transferred officers were “attached” to their new posts. In police terminology, this means they have no assigned duties—effectively sidelining them. These officers are moved first to highlight this group.'
+		},
+		{
+			title: 'The Final Picture',
+			description: 'The remaining officers are then reassigned. In total, 14% of all transferred officers were attached. Notably, half of all DCs and higher-ranked officers ended up in this status, suggesting a targeted removal from active command.'
 		}
 	];
 
@@ -157,10 +160,22 @@
 		const clusterPositionMap = new Map(transferredData.map(d => [d.id, { x: d.x, y: d.y }]));
 		data.forEach(d => { d.x3 = clusterPositionMap.has(d.id) ? clusterPositionMap.get(d.id).x : d.x2; d.y3 = clusterPositionMap.has(d.id) ? clusterPositionMap.get(d.id).y : d.y2; });
 
-		const sim4 = forceSimulation(transferredData).force('x', forceX(d => (d.attachment === 1 ? width * 0.25 : width * 0.75)).strength(0.1)).force('y', forceY(height / 2).strength(0.1)).force('collide', forceCollide(dotRadius + 1.5)).stop();
+		const attachedData = transferredData.filter(d => d.attachment === 1);
+		const sim4 = forceSimulation(attachedData).force('x', forceX(width * 0.25).strength(0.1)).force('y', forceY(height / 2).strength(0.1)).force('collide', forceCollide(dotRadius + 1.5)).stop();
 		for (let i = 0; i < 200; ++i) sim4.tick();
-		const attachmentPositionMap = new Map(transferredData.map(d => [d.id, { x: d.x, y: d.y }]));
-		data.forEach(d => { d.x4 = attachmentPositionMap.has(d.id) ? attachmentPositionMap.get(d.id).x : d.x3; d.y4 = attachmentPositionMap.has(d.id) ? attachmentPositionMap.get(d.id).y : d.y3; });
+		const intermediateAttachmentPosMap = new Map(attachedData.map(d => [d.id, { x: d.x, y: d.y }]));
+		data.forEach(d => {
+			d.x4 = intermediateAttachmentPosMap.has(d.id) ? intermediateAttachmentPosMap.get(d.id).x : d.x3;
+			d.y4 = intermediateAttachmentPosMap.has(d.id) ? intermediateAttachmentPosMap.get(d.id).y : d.y3;
+		});
+
+		const sim5 = forceSimulation(transferredData).force('x', forceX(d => (d.attachment === 1 ? width * 0.25 : width * 0.75)).strength(0.1)).force('y', forceY(height / 2).strength(0.1)).force('collide', forceCollide(dotRadius + 1.5)).stop();
+		for (let i = 0; i < 200; ++i) sim5.tick();
+		const finalAttachmentPosMap = new Map(transferredData.map(d => [d.id, { x: d.x, y: d.y }]));
+		data.forEach(d => {
+			d.x5 = finalAttachmentPosMap.has(d.id) ? finalAttachmentPosMap.get(d.id).x : d.x4;
+			d.y5 = finalAttachmentPosMap.has(d.id) ? finalAttachmentPosMap.get(d.id).y : d.y4;
+		});
 		
 		const rankGroups = { 'High': transferredData.filter(d => d.rank_level === 'High'), 'Low': transferredData.filter(d => d.rank_level !== 'High') };
 		const rankClusterCenters = { 'High': { x: width * 0.2, y: height / 2, key: 'High Rank' }, 'Low': { x: width * 0.65, y: height / 2, key: 'Low Rank' } };
@@ -189,7 +204,7 @@
 			if (group.length === 0) return null;
 			const center = attachmentClusterCenters[key];
 			let maxDist = 0;
-			group.forEach(d => { const pos = { x: d.x4, y: d.y4 }; const dist = distance(pos, center); if (dist > maxDist) maxDist = dist; });
+			group.forEach(d => { const pos = { x: d.x5, y: d.y5 }; const dist = distance(pos, center); if (dist > maxDist) maxDist = dist; });
 			const radius = maxDist + dotRadius * 2;
 			return { cx: center.x, cy: center.y, r: radius, key: center.key, circumference: 2 * Math.PI * radius };
 		}).filter(Boolean);
@@ -281,47 +296,59 @@
 						{/each}
 					</g>
 				{/if}
-				{#if activeStep === 4}
+
+				{#if activeStep >= 4}
 					<g class="bounding-circles-group">
 						{#each attachmentBoundingCircles as circle (circle.key)}
-							{@const lineY1 = circle.cy + circle.r + 10}
-							{@const lineY2 = lineY1 + 50}
-							{@const labelY = lineY2 + 20}
-
-							<circle 
-								cx={circle.cx} 
-								cy={circle.cy} 
-								r={circle.r} 
-								class="bounding-circle" 
-								style="stroke-dasharray: {circle.circumference}; stroke-dashoffset: {circle.circumference};"
-							/>
-							
-							<line 
-								x1={circle.cx} 
-								y1={lineY1} 
-								x2={circle.cx} 
-								y2={lineY2} 
-								class="cluster-connector-line"
-							/>
-
-							<text 
-								x={circle.cx} 
-								y={labelY} 
-								class="cluster-label" 
-								text-anchor="middle"
-							>
-								{circle.key}
-							</text>
+							{#if circle.key === 'Attached' || activeStep === 5}
+								{@const lineY1 = circle.cy + circle.r + 10}
+								{@const lineY2 = lineY1 + 50}
+								{@const labelY = lineY2 + 20}
+								<circle 
+									cx={circle.cx} 
+									cy={circle.cy} 
+									r={circle.r} 
+									class="bounding-circle" 
+									style="stroke-dasharray: {circle.circumference}; stroke-dashoffset: {circle.circumference};"
+								/>
+								<line 
+									x1={circle.cx} 
+									y1={lineY1} 
+									x2={circle.cx} 
+									y2={lineY2} 
+									class="cluster-connector-line"
+								/>
+								<text 
+									x={circle.cx} 
+									y={labelY} 
+									class="cluster-label" 
+									text-anchor="middle"
+								>
+									{circle.key}
+								</text>
+							{/if}
 						{/each}
 					</g>
 				{/if}
+				
 				<g class="dots">
 					{#each renderedTransfers as d (d.id)}
 						<circle
 							r={activeConfig.dotRadius}
 							fill={getColor(d)}
 							class:faded={d.faded}
-							style="transform: translate({ activeStep < 2 ? d.x1 : (activeStep === 2 ? d.x2 : (activeStep === 3 ? d.x3 : d.x4)) }px, { activeStep < 2 ? d.y1 : (activeStep === 2 ? d.y2 : (activeStep === 3 ? d.y3 : d.y4)) }px);"
+							class:hidden-dot={activeStep === 4 && d.attachment !== 1}
+							style="transform: translate({
+								activeStep < 2 ? d.x1 :
+								(activeStep === 2 ? d.x2 :
+								(activeStep === 3 ? d.x3 :
+								(activeStep === 4 ? d.x4 : d.x5)))
+							}px, {
+								activeStep < 2 ? d.y1 :
+								(activeStep === 2 ? d.y2 :
+								(activeStep === 3 ? d.y3 :
+								(activeStep === 4 ? d.y4 : d.y5)))
+							}px);"
 							on:mouseover={(e) => showTooltip(e, d)}
 							on:mouseout={hideTooltip}
 							on:focus={(e) => showTooltip(e, d)}
@@ -353,24 +380,23 @@
 	/* --- SVG Element Styles --- */
 	.bounding-circle {
 		fill: none;
-		stroke: #4b5563; /* Darker stroke for better contrast on white */
+		stroke: #4b5563;
 		stroke-width: 1.5px;
 		animation: draw-circle 0.9s ease-out forwards;
 	}
 	
 	.cluster-connector-line {
-		stroke: #1f2937; /* Darker line */
+		stroke: #1f2937;
 		stroke-width: 1.5px;
 		animation: fade-in 0.8s 0.4s ease-out forwards;
 		opacity: 0;
 	}
 
-	/* MODIFIED: Stylize SVG labels */
 	.cluster-label {
-		fill: #111827; /* Darker text */
+		fill: #111827;
 		font-size: 15px;
 		font-family: 'Inter', sans-serif;
-		font-weight: 600; /* Bolder */
+		font-weight: 600;
 		animation: fade-in 0.8s 0.2s ease-out forwards;
 		opacity: 0;
 	}
@@ -385,6 +411,10 @@
 	}
 	.dots circle.faded {
 		opacity: 0.1;
+	}
+	.dots circle.hidden-dot {
+		opacity: 0;
+		pointer-events: none;
 	}
 
 	/* --- Tooltip --- */
@@ -431,11 +461,10 @@
 		align-items: center;
 	}
 
-	/* MODIFIED: New styling for the step content box */
 	.step-content {
 		width: 100%;
-		background: #ffffff; /* Dark slate gray background */
-		color: #000000; /* Light gray text */
+		background: #ffffff;
+		color: #000000;
 		border: 1px solid #ffffff;
 		padding: 1.5rem 2rem;
 		border-radius: 8px;
@@ -443,19 +472,17 @@
 		box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1), 0 3px 6px rgba(0,0,0,0.08);
 	}
 
-	/* MODIFIED: New styling for the title ribbon */
 	.step-content h3 {
-		background: #111827; /* Very dark background for ribbon */
-		color: #f3f4f6; /* Off-white text */
+		background: #111827;
+		color: #f3f4f6;
 		font-size: 0.8rem;
 		font-weight: 600;
 		text-transform: uppercase;
 		text-align: center;
 		letter-spacing: 0.05em;
 		padding: 0.5rem 1.9rem;
-		/* Use negative margin to make it span the parent's padding */
 		margin: -1.5rem -2rem 1.5rem -2rem;
-		border-top-left-radius: 7px; /* Match parent's border-radius */
+		border-top-left-radius: 7px; 
 		border-top-right-radius: 7px;
 	}
 	.step-content p {
@@ -495,7 +522,7 @@
 			top: 0;
 			height: 65vh;
 			z-index: 1;
-			background: white; /* Keep background white for mobile graphic */
+			background: white; 
 			width: 100%;
 			border-bottom: 1px solid #e0e0e0;
 			display: flex;
@@ -521,7 +548,7 @@
 		.scrolly-steps {
 			width: 100%;
 			z-index: 0;
-			background-color: #ffffff; /* Add a light background to the steps area on mobile */
+			background-color: #ffffff; 
 		}
 
 		.step {
@@ -541,7 +568,6 @@
 			padding: 1rem 1.25rem;
 		}
 
-		/* Adjust ribbon margin for mobile padding */
 		.step-content h3 {
 			margin: -1rem -1.25rem 1rem -1.25rem;
 		}
