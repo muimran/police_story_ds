@@ -1,21 +1,18 @@
 // svelte.config.js
 
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import adapter from '@sveltejs/adapter-static';
 
-// CHANGE 1: Import adapter-static instead of adapter-auto
-import adapter from '@sveltejs/adapter-static'; 
+const dev = process.argv.includes('dev'); // so local preview works
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
     preprocess: vitePreprocess(),
 
     kit: {
-        // CHANGE 2: Use the static adapter
-        adapter: adapter(), 
-
-        // KEEP THIS! Your base path is correct for hosting in a subfolder.
+        adapter: adapter(),
         paths: {
-            base: '/suv'
+            base: dev ? '' : '/police_story_ds'  // must match repo name
         }
     }
 };
