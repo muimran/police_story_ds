@@ -5,6 +5,9 @@
 	import scrollama from 'scrollama';
 	import { forceSimulation, forceCollide, forceX, forceY } from 'd3-force';
 
+	// --- Component Prop ---
+	export let t; // Receives the 'transfers' object from translations.js
+
 	// --- Component State ---
 	let allTransfers = [];
 	let renderedTransfers = [];
@@ -63,34 +66,6 @@
 
     let activeScroller;
 
-	// --- Scrollytelling Data ---
-	const steps = [
-		{
-			title: 'The Entire Group',
-			description: 'During the July uprising, 365 officers with the rank of Assistant Commissioner (AC) or higher were posted in the DMP area. Each circles represents every individual police officer'
-		},
-		{
-			title: '88% are forced out',
-			description: 'Of these, 45 remain in their posts. The other 320 have either been transferred out, retired, or fled. The Daily Star acquired the transfer information of 236 senior officers. '
-		},
-		{
-			title: 'A Split in Command',
-			description: 'Among them, 64 were <span style="background-color: #fdba74; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">higher ranking</span> officials (Deputy Commissioner or above), while the <span style="background-color: #4E79A7; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">remaining 172</span> were ranked AC or ADC.'
-		},
-		{
-			title: 'Destinations of Transfers',
-			description: 'These officers were reassigned to 21 different outposts, which we grouped into five categories. 45% of the senior-most officers (DC or above) are transferred to range DIG’s offices (central and regional administration). The largest share of transfers overall went to specialized operational units such as RAB and APBn.'
-		},
-		{
-			title: 'Sidelined Officers',
-			description: 'A significant portion of transferred officers were “attached” to their new posts. In police terminology, this means they have no assigned duties—effectively sidelining them. These officers are moved first to highlight this group.'
-		},
-		{
-			title: 'The Final Picture',
-			description: 'The remaining officers are then reassigned. In total, 14% of all transferred officers were attached. Notably, half of all DCs and higher-ranked officers ended up in this status, suggesting a targeted removal from active command.'
-		}
-	];
-
 	// --- Reactive Updates ---
 	$: {
 		if (allTransfers.length > 0) {
@@ -109,7 +84,9 @@
 	// --- Color Logic ---
 	const getColor = (d) => {
 		if (activeStep === 0) return '#9ca3af'; 
+		if (activeStep === 1 && d.status === 'transferred') return '#663399';
 		if (activeStep >= 2 && d.rank_level === 'High') return '#fdba74';
+		
 		switch (d.status) {
 			case 'transferred': return '#4E79A7';
 			case 'remained': return '#9ca3af';
@@ -124,12 +101,13 @@
 		tooltipElement.style.visibility = 'visible';
 		tooltipElement.style.left = `${event.clientX + 10}px`;
 		tooltipElement.style.top = `${event.clientY + 10}px`;
+        const NA = t.tooltipLabels.not_applicable;
 		tooltipElement.innerHTML = `
-			<div>ID: ${d.id || 'N/A'}</div>
-			<div>Rank: ${d.rank || 'N/A'}</div>
-			<div>Rank Level: ${d.rank_level || 'N/A'}</div>
-			<div>Destination Cluster: ${d.destination_cluster || 'N/A'}</div>
-			<div>Attached: ${d.attachment === 1 ? 'Yes' : 'No'}</div>
+			<div>${t.tooltipLabels.id}: ${d.id || NA}</div>
+			<div>${t.tooltipLabels.rank}: ${d.rank || NA}</div>
+			<div>${t.tooltipLabels.rank_level}: ${d.rank_level || NA}</div>
+			<div>${t.tooltipLabels.destination_cluster}: ${d.destination_cluster || NA}</div>
+			<div>${t.tooltipLabels.attached}: ${d.attachment === 1 ? t.tooltipLabels.yes : t.tooltipLabels.no}</div>
 		`;
 	};
 
@@ -178,7 +156,7 @@
 		});
 		
 		const rankGroups = { 'High': transferredData.filter(d => d.rank_level === 'High'), 'Low': transferredData.filter(d => d.rank_level !== 'High') };
-		const rankClusterCenters = { 'High': { x: width * 0.2, y: height / 2, key: 'High Rank' }, 'Low': { x: width * 0.65, y: height / 2, key: 'Low Rank' } };
+		const rankClusterCenters = { 'High': { x: width * 0.2, y: height / 2, key: t.clusterLabels.high_rank }, 'Low': { x: width * 0.65, y: height / 2, key: t.clusterLabels.low_rank } };
 		rankBoundingCircles = Object.entries(rankGroups).map(([key, group]) => {
 			if (group.length === 0) return null;
 			const center = rankClusterCenters[key];
@@ -191,15 +169,16 @@
 		const destinationGroups = transferredData.reduce((acc, d) => { const key = d.destination_cluster; if (!acc[key]) acc[key] = []; acc[key].push(d); return acc; }, {});
 		boundingCircles = Object.values(destinationGroups).map(group => {
 			if (group.length === 0) return null;
-			const { x: targetX, y: targetY } = clusterPositions[group[0].destination_cluster] || defaultPos;
+            const key = group[0].destination_cluster;
+			const { x: targetX, y: targetY } = clusterPositions[key] || defaultPos;
 			let maxDist = 0;
 			group.forEach(d => { const pos = {x: d.x3, y: d.y3}; const dist = distance(pos, { x: targetX, y: targetY }); if (dist > maxDist) maxDist = dist; });
 			const radius = maxDist + dotRadius * 2;
-			return { cx: targetX, cy: targetY, r: radius, key: group[0].destination_cluster, circumference: 2 * Math.PI * radius };
+			return { cx: targetX, cy: targetY, r: radius, key: t.clusterLabels[key] || key, circumference: 2 * Math.PI * radius };
 		}).filter(Boolean);
 
 		const attachmentGroups = { '1': transferredData.filter(d => d.attachment === 1), '0': transferredData.filter(d => d.attachment === 0) };
-		const attachmentClusterCenters = { '1': { x: width * 0.25, y: height / 2, key: 'Attached' }, '0': { x: width * 0.75, y: height / 2, key: 'Others' } };
+		const attachmentClusterCenters = { '1': { x: width * 0.25, y: height / 2, key: t.clusterLabels.attached }, '0': { x: width * 0.75, y: height / 2, key: t.clusterLabels.others } };
 		attachmentBoundingCircles = Object.entries(attachmentGroups).map(([key, group]) => {
 			if (group.length === 0) return null;
 			const center = attachmentClusterCenters[key];
@@ -227,6 +206,7 @@
                 activeScroller.destroy();
             }
             activeScroller = scrollama();
+			const steps = t.scrollySteps; // Use translated steps to get length
             if (isMobile) {
                 activeScroller.setup(MOBILE_SCROLLER_CONFIG)
                     .onStepEnter(response => { 
@@ -267,7 +247,7 @@
 
 <div class="scrolly-container-transparent">
 	<div class="scrolly-steps">
-		{#each steps as step, i}
+		{#each t.scrollySteps as step, i}
 			<div class="step" data-step-id={i}>
 				<div class="step-content">
 					<h3>{step.title}</h3>
@@ -300,7 +280,7 @@
 				{#if activeStep >= 4}
 					<g class="bounding-circles-group">
 						{#each attachmentBoundingCircles as circle (circle.key)}
-							{#if circle.key === 'Attached' || activeStep === 5}
+							{#if circle.key === t.clusterLabels.attached || activeStep === 5}
 								{@const lineY1 = circle.cy + circle.r + 10}
 								{@const lineY2 = lineY1 + 50}
 								{@const labelY = lineY2 + 20}

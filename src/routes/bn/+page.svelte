@@ -7,7 +7,7 @@
   import Headline from '$lib/components/Headline.svelte';
   import { base } from '$app/paths'; 
   import { slide } from 'svelte/transition';
-  import { en as t } from '$lib/translations.js';
+  import { bn as t } from '$lib/translations.js';
 
   let methodologyOpen = false;
   let documentsOpen = false;
@@ -26,7 +26,7 @@
     return acc;
   }, []);
 
-  const canonicalURL = "https://policestory.thedailystar.net/";
+  const canonicalURL = "https://policestory.thedailystar.net/bn/";
   const socialImageURL = "https://policestory.thedailystar.net/images/social.jpeg";
   const yourTwitterHandle = "@dailystarnews";
   const pubDate = new Date('2025-08-14').toISOString();
@@ -49,7 +49,7 @@
   <meta name="twitter:description" content={t.meta.description} />
   <meta name="twitter:image" content={socialImageURL} />
   <meta name="twitter:creator" content={yourTwitterHandle} />
-  <link rel="canonical" href="https://policestory.thedailystar.net/" />
+  <link rel="canonical" href="https://policestory.thedailystar.net/bn/" />
   <link rel="alternate" hreflang="en" href="https://policestory.thedailystar.net/" />
   <link rel="alternate" hreflang="bn" href="https://policestory.thedailystar.net/bn/" />
   <script type="application/ld+json">
@@ -91,12 +91,11 @@
 </style>
 
 <nav style="text-align:center; padding: 1rem; background: #f1f1f1; font-family: sans-serif;">
-  <strong>English</strong> | <a href="/bn/">বাংলা</a>
+  <a href="/">English</a> | <strong>বাংলা</strong>
 </nav>
 
 <Hero />
 <Headline t={t.headline} locale={t.locale} publishedDate={new Date('Wed Aug 14, 2025 12:06 PM')} />
-
 {#each contentChunks as chunk, i}
   {#if chunk.type === 'component'}
     {#if chunk.name === 'PoliceMap'}
