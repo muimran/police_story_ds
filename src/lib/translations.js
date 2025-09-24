@@ -1,3 +1,5 @@
+// src/lib/translations.js
+
 // A helper function to create blockquote objects
 const createQuote = (text, cite) => ({ type: 'blockquote', text, cite });
 
@@ -6,23 +8,7 @@ const createQuote = (text, cite) => ({ type: 'blockquote', text, cite });
 // ===================================================================================
 export const en = {
   locale: 'en-US',
-
-  headline: {
-    line1: "July Uprising",
-    line2: "Commanders of crackdown",
-    line3: "Police leadership during July uprising uncovered",
-    datePublished: "Published:",
-    dateUpdated: "Updated:",
-    creditReporting: "Reporting:",
-    creditDataViz: "Data Visualisation and Map:",
-    creditGraphics: "Graphics:",
-    creditEditing: "Editing:",
-    // NAMES ADDED HERE
-    nameReporting: "Keero Adhnan Ahmed",
-    nameDataViz: "Muhammad Imran",
-    nameGraphics: "Anwar Sohel",
-    nameEditing: "Martin Swapan Pandey",
-  },
+  mapboxAccessToken: 'pk.eyJ1IjoiaW1yYW5kYXRhIiwiYSI6ImNtZHoxOXV3YTA1dHoya3F2dG5neXRxN2oifQ.1wSQLtAiXbRlFuzwlSJ9Gg', // English Token
 
   meta: {
     title: "Commanders of crackdown: Police leadership during July uprising uncovered | The Daily Star",
@@ -31,6 +17,8 @@ export const en = {
     keywords: "July 2024 Bangladesh protests, Bangladesh quota protest crackdown, Sheikh Hasina lethal force order, July 2024 Dhaka police shootings, Bangladesh police live fire protest, Jatrabari protest killings, Dhaka student protest deaths, Bangladesh police massacre July 2024, UN OHCHR Bangladesh protest report, Dhaka Metropolitan Police FIRs, Data Visualisation, Data Journalism",
     ldJsonHeadline: "Commanders of crackdown: Police leadership during July uprising uncovered | The Daily Star",
   },
+
+  // ... [rest of the en object is unchanged] ...
   articleContent: [
     { type: 'p', content: "In the early hours of August 5, 2024, just hours before her fall, Sheikh Hasina reportedly convened one last secret meeting with the police and military leadership." },
     { type: 'p', content: "With hundreds already dead, she chastised the military leadership for their “handling of the situation,” multiple sources have confirmed. Pointing to the inspector general of police (IGP), she reportedly remarked, “But they’re doing really well.”" },
@@ -57,6 +45,7 @@ export const en = {
     { type: 'p', content: "“We were simply the henchmen of official orders. If anyone refused to fire, they risked losing their job,” a sub-inspector posted in a police station in the capital said, describing the internal atmosphere at the time. He spoke on condition of anonymity." },
     { type: 'p', content: "Commenting on the chain of responsibility, Supreme Court lawyer Dr Qazi Zahed Iqbal said that if any junior officers executes an unlawful order, they must be held personally liable." },
     { type: 'p', content: "“But those who issued the order or coerced them are also, for very valid reasons, considered abettors. They also fall within the scope of the crime,” he told The Daily Star." },
+    { type: 'component', name: 'SourceDocuments' },
     { type: 'h2', content: "The commanders" },
     { type: 'p', content: "Bangladesh police, headed by an inspector general, operate under the home ministry. In metropolitan areas, the force is led by a commissioner." },
     { type: 'p', content: "The whole DMP area is divided into eight operational divisions, each headed by a deputy commissioner (DC). Under each division, there are several zones headed by additional deputy commissioners (ADCs) and assistant commissioners (ACs)." },
@@ -74,6 +63,7 @@ export const en = {
     { type: 'p', content: "Among them is Sattaki Kabiraj Jhulan, former ADC of Public Order Management (POM), a riot-control reserve force under DMP." },
     { type: 'p', content: "He was present in Mirpur 13 on July 19 during a face-off between protesters and law enforcers. The related FIR shows his unit fired 141 live rounds, 104 from Type 56 assault rifles. Not a single non-lethal round was fired there." },
     { type: 'component', name: 'OfficerTable' },
+    { type: 'component', name: 'AudioSection' },
     { type: 'h2', content: "The great desertion" },
     { type: 'p', content: "At least 10 former DMP officials, including Commissioner Habibur Rahman and Detective Branch chief Harun Or Rashid, absconded from their posts on August 6, the day after Hasina fled to India." },
     { type: 'p', content: "Eight of them held the rank of DC or higher, and most were widely believed to have close ties with the political leadership of the ousted regime." },
@@ -115,7 +105,8 @@ export const en = {
 
   documentsSection: {
     title: "Source Documents",
-    captions: [ "In most FIRs, officers present at the scene were mentioned in this way.", "In some cases, officers were directly named as the ones who ‘ordered’ the shooting." ]
+    captions: [ "In most FIRs, officers present at the scene were mentioned in this way.", "In some cases, officers were directly named as the ones who ‘ordered’ the shooting." ],
+    alt_texts: [ "FIR document showing officers mentioned by rank", "FIR document showing a specific officer named as giving an order" ]
   },
   methodologySection: {
     title: "Methodology",
@@ -135,6 +126,13 @@ export const en = {
     line: "<strong>Additional reporting:</strong> Emrul Hasan Bappi. <strong>Research:</strong> Sharmin Sikder, Mashfiq Mizan, Aunik Arnold Dhali, Subrata Roy, Samsul Arefin Khan, Khalid Hossain, Nabid Yeasin, Badshah Mollah, Tangila Tasnim, Usraat Fahmidah, and Rahee Nayab"
   },
 
+  headline: {
+    line1: "July Uprising", line2: "Commanders of crackdown", line3: "Police leadership during July uprising uncovered",
+    datePublished: "Published:", dateUpdated: "Updated:",
+    creditReporting: "Reporting:", creditDataViz: "Data Visualisation and Map:", creditGraphics: "Graphics:", creditEditing: "Editing:",
+    nameReporting: "Keero Adhnan Ahmed", nameDataViz: "Muhammad Imran", nameGraphics: "Anwar Sohel", nameEditing: "Martin Swapan Pandey",
+  },
+  
   policeMap: {
     scrollyTextboxes: {
         "1": "The Daily Star has calculated the amount of ammunition used by the police in Dhaka from July 16 to 21 by examining the FIRs of cases filed by the police during the uprising.",
@@ -177,6 +175,13 @@ export const en = {
     }
   },
 
+  audioSection: {
+    heading: "An Intercepted Recording",
+    text: "The following audio was reportedly intercepted on the night of July 19. It appears to feature a senior commander issuing orders to units in the field.",
+    // **IMPORTANT**: Replace this src with the real one from your SoundCloud embed code.
+    embedCode: `<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=REPLACE_WITH_YOUR_SOUNDCLOUD_URL"></iframe>`
+  },
+
   officerTable: {},
   absconded: {},
 };
@@ -187,23 +192,7 @@ export const en = {
 // ===================================================================================
 export const bn = {
   locale: 'bn-BD',
-
-  headline: {
-    line1: "জুলাই অভ্যুত্থান",
-    line2: "গুলির নির্দেশদাতা",
-    line3: "কারা সেই পুলিশ কর্মকর্তা?",
-    datePublished: "প্রকাশিত:",
-    dateUpdated: "আপডেট:",
-    creditReporting: "রিপোর্টিং:",
-    creditDataViz: "ডেটা ভিজ্যুয়ালাইজেশন ও ম্যাপ:",
-    creditGraphics: "গ্রাফিক্স:",
-    creditEditing: "সম্পাদনা:",
-    // NAMES ADDED HERE
-    nameReporting: "কিরো আদনান আহমেদ",
-    nameDataViz: "মুহাম্মদ ইমরান",
-    nameGraphics: "আনোয়ার সোহেল",
-    nameEditing: "মার্টিন স্বপন পান্ডে",
-  },
+  mapboxAccessToken: 'pk.eyJ1IjoiaW1yYW5kYXRhIiwiYSI6ImNtZnducjc2ejAxNmkya3NmMDhqOWpyNDkifQ.dBdKqHtIII3RI5IgEG9ciw', // Bengali Token
 
   meta: {
     title: "গুলির নির্দেশদাতা কর্মকর্তারা কে কোথায়? | দ্য ডেইলি স্টার",
@@ -213,6 +202,7 @@ export const bn = {
     ldJsonHeadline: "গুলির নির্দেশদাতা কর্মকর্তারা কে কোথায়?",
   },
 
+  // ... [rest of the bn object is unchanged] ...
   articleContent: [
     { type: 'p', content: "২০২৪ সালের ৫ই আগস্ট। সকালবেলা। প্রধানমন্ত্রী শেখ হাসিনা তখনো জানেন না কয়েক ঘণ্টার মধ্যে সবকিছু নিয়ে দেশ ছেড়ে পালাতে হবে তার। আন্দোলন নিয়ন্ত্রণ করতে পুলিশ ও তিন বাহিনীর প্রধানদের গণভবনে তলব করেন তিনি।" },
     { type: 'p', content: "একাধিক সূত্র জানায়, এই ‘শেষ বৈঠকে’ আন্দোলন দমনে যথেষ্ঠ কঠোর না হওয়ায় সামরিক কর্মকর্তাদের তুলোধুনো করেন হাসিনা। এরপর পুলিশের মহাপরিদর্শকের (আইজিপি) দিকে তাকিয়ে বলেন, ‘তারা (পুলিশ) তো ভালো করছে।’" },
@@ -223,7 +213,7 @@ export const bn = {
     { type: 'p', content: "গত তিন মাসে শত শত পৃষ্ঠার দাপ্তরিক নথি পর্যালোচনা করে দ্য ডেইলি স্টার ৩৯ জন পুলিশ কর্মকর্তাকে শনাক্ত করেছে, যাঁদের অধীনস্থ ইউনিটগুলো আন্দোলনকারীদের ওপর গুলি চালিয়ে। কিছু ক্ষেত্রে, এই কর্মকর্তারা ঘটনাস্থলে উপস্থিত থেকে সরাসরি গুলি চালানোর নির্দেশও দিয়েছেন।" },
     { type: 'p', content: "এই ৩৯ কর্মকর্তার মধ্যে ১৩ জন পলাতক, ২৬ জনকে দেশের বিভিন্ন স্থানে বদলি করা হয়েছে এবং মাত্র দুজন গ্রেপ্তার হয়েছেন।" },
     { type: 'h2', content: "আন্দোলন দমনে মরণাস্ত্র" },
-    { type: 'p', content: "আদালতের রায়ে সরকারি চাকরিতে কোটা ব্যবস্থা পুনর্বহাল হওয়ার পর শিক্ষার্থীরা গতবছরের ৬ জুন প্রথম কোটা সংস্কারের দাবিতে রাস্তায় নামে। আন্দোলন শুরুর প্রথম এক মাসে আইনশৃঙ্খলা বাহিনী এতে হস্তক্ষেপ করেনি।" },
+    { type: 'p', content: "আদালতের রায়ে সরকারি চাকরিতে কোটা ব্যবস্থা পুনর্ব্যবহার হওয়ার পর শিক্ষার্থীরা গতবছরের ৬ জুন প্রথম কোটা সংস্কারের দাবিতে রাস্তায় নামে। আন্দোলন শুরুর প্রথম এক মাসে আইনশৃঙ্খলা বাহিনী এতে হস্তক্ষেপ করেনি।" },
     { type: 'p', content: "পরিস্থিতি পাল্টায় ১৪ জুলাই প্রধানমন্ত্রীর ‘রাজাকারের বাচ্চা’রা বক্তব্যের পর। এর পরই সারা দেশে সড়ক ও রেললাইন অবরোধ করতে শুরু করে আন্দোলনকারীরা।" },
     { type: 'component', name: 'PoliceMap' },
     { type: 'h2', content: "বন্দুকের পেছনের ব্যক্তিরা" },
@@ -235,6 +225,7 @@ export const bn = {
     { type: 'p', content: "অভ্যুত্থানকালীন সময়ে ঢাকার ২২টি থানার ১৬১টি এজাহার পর্যালোচনা করে আমরা দেখতে পাই, প্রতিটি এজাহারেই পুলিশের আত্মরক্ষা বা সরকারি সম্পত্তি রক্ষাকে গুলি ছোঁড়ার কারণ হিসেবে উল্লেখ করা হয়েছে। এবং প্রায় সব গুলিই ছুড়েছেন এসআই বা কনস্টেবলরা।" },
     { type: 'p', content: "তালিকায় থাকা অন্তত ৩০ জন এসআই বা কনস্টেবলের সঙ্গে যোগাযোগ করেছে দ্য ডেইলি স্টার। তাদের সিংহভাগই সরাসরি অস্বীকার করে বলেছেন, তারা কখনো কোনো প্রাণঘাতি গুলি ছোড়েননি। যারা স্বীকার করেছেন, তাদের দাবি ‘উপরের নির্দেশ’ ছিল গুলি করার। ঘটনাস্থলে উর্ধ্বতন কর্মকর্তাদের নির্দেশ অনুযায়ী গুলি না চালালে তাদের চাকরি চলে যাওয়ার ঝুঁকি ছিল।" },
     createQuote("বেআইনি আদেশ আসলে সেটি পালন করার দায় প্রতি কর্মকর্তার ব্যক্তিগতভাবে নিতে হবে। তবে যারা আদেশ দিয়েছেন বা আদেশ পালনে বাধ্য করেছেন, তারাও দুষ্কর্মের সহযোগী হিসেবে বিবেচিত হবেন। তারাও স্বাভাবিক নিয়মেই অপরাধের আওতায় পড়বেন।", "ড. কাজী জাহেদ ইকবাল, সুপ্রিম কোর্টের আইনজীবী"),
+    { type: 'component', name: 'SourceDocuments' },
     { type: 'h2', content: "যাদের নির্দেশে গুলি" },
     { type: 'p', content: "পুলিশের তৎকালীন মহাপরিদর্শক (আইজিপি) চৌধুরী আবদুল্লাহ আল-মামুন আন্তর্জাতিক অপরাধ ট্রাইবুনালে দেওয়া তার জবানবন্দিতে সুনির্দিষ্টভাবে উল্লেখ করেছেন, মারণাস্ত্র ব্যবহারের নির্দেশ সরাসরি তৎকালীন প্রধানমন্ত্রী শেখ হাসিনার কাছ থেকেই এসেছে।" },
     { type: 'p', content: "তবে মাঠপর্যায়ে তা বাস্তবায়ন করেছেন প্রতি বাহিনীর কিছু উর্ধ্বতন কর্মকর্তা। স্বরাষ্ট্র মন্ত্রণালয়ের অধীনে পরিচালিত বাংলাদেশ পুলিশের নেতৃত্বে থাকেন আইজিপি। মেট্রোপলিটন পুলিশের দায়িত্বে থাকেন পুলিশের কমিশনার।" },
@@ -249,6 +240,7 @@ export const bn = {
     { type: 'p', content: "এছাড়া যাত্রাবাড়িতে দায়িত্ব পালন ডেমরা জোনের নাহিদ ফেরদৌস ও শ্যামপুর জোনের শামসুল ইসলাম—এই দুই এসিকেই র‍্যাবে বদলি করা হয়। শামসুল এরইমধ্যে অতিরিক্ত পুলিশ সুপার হিসেবে পদোন্নতি পেলেও নাহিদ কখনোই র‍্যাবের কর্মস্থলে যোগ দেননি বলে জানিয়েছে র‍্যাবের সূত্র।" },
     { type: 'p', content: "এজাহার থেকে করা ডেইলি স্টারের তালিকায় ৩৮ জন পুলিশ কর্তার মধ্যে … জন গ্রেপ্তার, … জন পলাতক, … জন এখনো বিভিন্ন জায়গায় কর্মরত আছেন।" },
     { type: 'component', name: 'OfficerTable' },
+    { type: 'component', name: 'AudioSection' },
     { type: 'h2', content: "পুলিশ কর্তাদের গণ-পলায়ন" },
     { type: 'p', content: "তৎকালীন কমিশনার হাবিবুর রহমান এবং ডিবি প্রধান হারুন অর রশীদসহ ডিএমপির অন্তত ১০ জন ঊর্ধ্বতন কর্মকর্তাতে ৫ আগস্টের পর আর কর্মস্থলে দেখা যায়নি। এদের সিংহভাগই ক্ষমতাচ্যুত আওয়ামী সরকারঘনিষ্ঠ হিসেবে পরিচিত ছিলেন।" },
     { type: 'p', content: "গতবছরের ১ অক্টোবর স্বরাষ্ট্র উপদেষ্টা লেফটেন্যান্ট জেনারেল (অব.) জাহাঙ্গীর আলম চৌধুরী এক বক্তৃতায় বলেন, ‘যারা এখনও কাজে যোগদান করেনি তাদের আমরা পুলিশ বলবো না। তাদের ক্রিমিনাল বলবো।’" },
@@ -279,7 +271,8 @@ export const bn = {
 
   documentsSection: {
     title: "সোর্স ডকুমেন্টস",
-    captions: [ "বেশিরভাগ এফআইআর-এ ঘটনাস্থলে উপস্থিত কর্মকর্তাদের এইভাবে উল্লেখ করা হয়েছে।", "কিছু ক্ষেত্রে, কর্মকর্তাদের সরাসরি গুলি করার 'আদেশ' দাতা হিসেবে নাম উল্লেখ করা হয়েছে।" ]
+    captions: [ "বেশিরভাগ এফআইআর-এ ঘটনাস্থলে উপস্থিত কর্মকর্তাদের এইভাবে উল্লেখ করা হয়েছে।", "কিছু ক্ষেত্রে, কর্মকর্তাদের সরাসরি গুলি করার 'আদেশ' দাতা হিসেবে নাম উল্লেখ করা হয়েছে।" ],
+    alt_texts: [ "এফআইআর ডকুমেন্ট যেখানে কর্মকর্তাদের পদমর্যাদা অনুসারে উল্লেখ করা হয়েছে", "এফআইআর ডকুমেন্ট যেখানে একজন নির্দিষ্ট কর্মকর্তাকে গুলি করার আদেশদাতা হিসেবে নাম দেওয়া হয়েছে" ]
   },
   methodologySection: {
     title: "পদ্ধতি",
@@ -287,6 +280,13 @@ export const bn = {
   },
   credits: {
     line: "<strong>অতিরিক্ত রিপোর্টিং:</strong> এমরুল হাসান বাপ্পী। <strong>গবেষণা:</strong> Sharmin Sikder, Mashfiq Mizan,..."
+  },
+
+  headline: {
+    line1: "জুলাই অভ্যুত্থান", line2: "গুলির নির্দেশদাতা", line3: "কারা সেই পুলিশ কর্মকর্তা?",
+    datePublished: "প্রকাশিত:", dateUpdated: "আপডেট:",
+    creditReporting: "রিপোর্টিং:", creditDataViz: "ডেটা ভিজ্যুয়ালাইজেশন ও ম্যাপ:", creditGraphics: "গ্রাফিক্স:", creditEditing: "সম্পাদনা:",
+    nameReporting: "কিরো অধনান আহমেদ", nameDataViz: "মুহাম্মদ ইমরান", nameGraphics: "আনোয়ার সোহেল", nameEditing: "মার্টিন স্বপন পান্ডে",
   },
 
   policeMap: {
@@ -306,11 +306,11 @@ export const bn = {
       "13": "কারফিউয়ের প্রথম দিনে ঢাকার পাঁচ এলাকায় আরও প্রায় ৫ হাজার রাউন্ড প্রাণঘাতী গুলি ছোড়ে পুলিশ।"
     },
     thanaNames: {
-        "Badda": "বাড্ডা", "Dhanmondi": "ধানমন্ডি", "Kalabagan": "কলাবাগান", "Kodomtoli": "কদমতলী", "Motijheel": "মতিঝিল", "Jatrabari": "যাত্রাবাড়ী", 
+                "Badda": "বাড্ডা", "Dhanmondi": "ধানমন্ডি", "Kalabagan": "কলাবাগান", "Kodomtoli": "কদমতলী", "Motijheel": "মতিঝিল", "Jatrabari": "যাত্রাবাড়ী", 
         "Kafrul": "কাফরুল", "Uttara West": "উত্তরা পশ্চিম", "Mohammadpur": "মোহাম্মদপুর", "Rampura": "রামপুরা", "New Market": "নিউ মার্কেট", "Mohakhali": "মহাখালী", 
         "Paltan": "পল্টন", "Pallabi": "পল্লবী", "Shahbagh": "শাহবাগ", "Malibagh": "মালিবাগ", "Uttara East": "উত্তরা পূর্ব", "Gulshan": "গুলশান", "Adabor": "আদাবর", 
-        "DU Area": "ঢাকা বিশ্ববিদ্যালয় এলাকা", "Ramna": "রমনা"
-    },
+        "DU Area": "ঢাবি এলাকা", "Ramna": "রমনা"
+      },
     uiText: {
         thanaHeader: "থানা", totalLabel: "মোট",
         ammoLabels: { t56: 'টাইপ ৫৬', lethal: 'প্রাণঘাতী', rubber_cartridge: 'রাবার কার্তুজ', shotgun_shell: 'শটগান শেল', tear_gas_grenade: 'টিয়ার গ্যাস', baton_rounds: 'ব্যাটন রাউন্ড', non_lethal: 'অ-প্রাণঘাতী' },
@@ -332,6 +332,13 @@ export const bn = {
       high_rank: "উচ্চ পদমর্যাদা", low_rank: "নিম্ন পদমর্যাদা", attached: "সংযুক্ত", others: "অন্যান্য",
       'Specialized Operational Units': 'বিশেষায়িত অপারেশনাল ইউনিট', 'Training & Development': 'প্রশিক্ষণ ও উন্নয়ন', 'Central & Regional Administration': 'কেন্দ্রীয় ও আঞ্চলিক প্রশাসন', 'Investigation & Intelligence': 'তদন্ত ও গোয়েন্দা', 'Geographic Field Commands': 'ভৌগোলিক ফিল্ড কমান্ড'
     }
+  },
+
+  audioSection: {
+    heading: "একটি ইন্টারসেপ্টেড রেকর্ডিং",
+    text: "এই অডিওটি ১৯ জুলাই রাতে ইন্টারসেপ্ট করা হয়েছে বলে জানা গেছে। এতে একজন সিনিয়র কমান্ডারকে মাঠে থাকা ইউনিটগুলোকে নির্দেশ দিতে শোনা যায়।",
+    // **IMPORTANT**: Replace this src with the real one from your SoundCloud embed code.
+    embedCode: `<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=REPLACE_WITH_YOUR_SOUNDCLOUD_URL"></iframe>`
   },
 
   officerTable: {},

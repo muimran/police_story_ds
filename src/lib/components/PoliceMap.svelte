@@ -7,11 +7,14 @@
 	import GifOverlay from './GifOverlay.svelte';
 	import MapOverlay from './MapOverlay.svelte';
 
-	// CORRECTED PROPS: We explicitly ask for the texts and the locale. This is robust.
 	export let texts;
 	export let locale;
+	export let mapLanguage;
+	export let mapAccessToken; // Prop for the token
 
-	mapboxgl.accessToken = 'pk.eyJ1IjoiaW1yYW5kYXRhIiwiYSI6ImNtMDRlaHh1YTA1aDEybHI1ZW12OGh4cDcifQ.fHLLFYQx7JKPUp2Sl1jtYg';
+	// Use the prop to set the access token
+	mapboxgl.accessToken = mapAccessToken; 
+
 	const MAP_STYLE = 'mapbox://styles/imrandata/cme33sg5c00qn01sd0iz01lyy';
 
 	let map;
@@ -79,7 +82,7 @@
 		const labelFeatures = positionedLayers.map(layer => ({
 			type: 'Feature', geometry: { type: 'Point', coordinates: layer.coords },
 			properties: {
-				thana: texts.thanaNames[layer.thana] || layer.thana,
+				thana: layer.thana,
 				highlight: layer.highlight || false,
 				labelOffset: layer.placement ? layer.placement.offset : [0, 0],
 				labelAnchor: layer.placement ? layer.placement.anchor : 'center',
@@ -168,6 +171,7 @@
 		}
 		map = new mapboxgl.Map({ container: mapContainer, style: MAP_STYLE, center: [90.38789, 23.7780453], zoom: 10, interactive: false });
 		map.on('load', () => {
+			map.setLanguage(mapLanguage);
 			map.addSource('dhaka-boundary', { type: 'geojson', data: dhakaGeojsonData });
 			map.addSource('thana_labels_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
 			map.addSource('ammo_circles_source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
@@ -197,14 +201,9 @@
 	});
 
     function getStepTotalForAmmoType(ammoType) { if (!chapters[activeIndex]?.layers) return 0; return chapters[activeIndex].layers.reduce((sum, layer) => sum + (layer.totals[ammoType] || 0), 0); }
-    
-    function formatNumber(num) {
-        return num.toLocaleString(locale || 'en-US');
-    }
-
+    function formatNumber(num) { return num.toLocaleString(locale || 'en-US'); }
 	function addDynamicLabelPlacement(layers, mapInstance) { if (!layers || layers.length === 0) return []; const FONT_SIZE = 12; const AVG_CHAR_WIDTH = FONT_SIZE * 0.6; const LABEL_HEIGHT = FONT_SIZE; const PADDING = 4; const potentialPlacements = [ { anchor: 'left', offset: [0.8, 0] }, { anchor: 'right', offset: [-0.8, 0] }, { anchor: 'bottom', offset: [0, -1.2] }, { anchor: 'top', offset: [0, 1.2] }, { anchor: 'bottom-left', offset: [0.7, -0.7] }, { anchor: 'top-left', offset: [0.7, 0.7] }, { anchor: 'bottom-right', offset: [-0.7, -0.7] }, { anchor: 'top-right', offset: [-0.7, 0.7] } ]; const placedLabelBounds = []; function doBboxesOverlap(box1, box2) { return !(box1.x2 < box2.x1 || box1.x1 > box2.x2 || box1.y2 < box2.y1 || box1.y1 > box2.y2); } function calculateLabelBbox(point, placement) { const labelWidth = (point.thana.length * AVG_CHAR_WIDTH) + PADDING * 2; const labelHeight = LABEL_HEIGHT + PADDING * 2; const offsetX = placement.offset[0] * FONT_SIZE; const offsetY = placement.offset[1] * FONT_SIZE; let x1 = point.screenCoords.x + offsetX; let y1 = point.screenCoords.y + offsetY; if (placement.anchor.includes('right')) { x1 -= labelWidth; } else if (!placement.anchor.includes('left')) { x1 -= labelWidth / 2; } if (placement.anchor.includes('bottom')) { y1 -= labelHeight; } else if (!placement.anchor.includes('top')) { y1 -= labelHeight / 2; } return { x1: x1, y1: y1, x2: x1 + labelWidth, y2: y1 + labelHeight }; } const points = layers.map(layer => { const total = Object.values(layer.totals).reduce((sum, val) => sum + (val || 0), 0); return { ...layer, total: total, screenCoords: mapInstance.project(layer.coords) }; }).sort((a, b) => b.total - a.total); return points.map(point => { let chosenPlacement = null; for (const placement of potentialPlacements) { const bbox = calculateLabelBbox(point, placement); const isColliding = placedLabelBounds.some(existingBbox => doBboxesOverlap(bbox, existingBbox)); if (!isColliding) { chosenPlacement = placement; placedLabelBounds.push(bbox); break; } } return { ...point, placement: chosenPlacement, showLabel: (!!chosenPlacement || point.highlight) && (point.total > 0 || point.highlight) }; }); }
     function normalizeDate(dateString) { if (!dateString || typeof dateString !== 'string') return ''; const parts = dateString.split('/'); if (parts.length === 3) { const day = parts[0].padStart(2, '0'); const month = parts[1].padStart(2, '0'); let year = parts[2]; if (year.length === 2) year = `20${year}`; return `${day}/${month}/${year}`; } return dateString; }
-    
 	function formatDateForRibbon(dateString) {
 		if (!dateString || typeof dateString !== 'string') return '';
 		const parts = dateString.split('/');
@@ -282,6 +281,7 @@
                     <tbody>
                         {#each sortedTableData as layer}
                             <tr>
+                                <!-- The table will use the translated name -->
                                 <td>{texts.thanaNames[layer.thana] || layer.thana}</td>
                                 {#each activeAmmoTypesInStep as type}
                                     <td class="total-value">{formatNumber(layer.totals[type] || 0)}</td>
@@ -325,7 +325,7 @@
     .gradient-top, .gradient-bottom { position: absolute; left: 0; right: 0; z-index: 1; pointer-events: none; }
     .gradient-top { top: 0; height: 8%; background: linear-gradient(to bottom, white 0%, transparent 100%); }
     .gradient-bottom { bottom: 0; height: 8%; background: linear-gradient(to top, white 0%, transparent 100%); }
-    .legend-container-desktop { position: fixed; bottom: 40px; right: 20px; left: auto; top: auto; transform: none; z-index: 5; width: 350px; max-height: 53vh; display: flex; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; }
+    .legend-container-desktop { position: fixed; bottom: 40px; right: 20px; left: auto; top: auto; transform: none; z-index: 5; width: 270px; max-height: 63vh; display: flex; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; }
     .legend-container-desktop.visible { opacity: 1; pointer-events: auto; }
 	:root { --glass-bg: rgba(255, 255, 255, 0.2); --glass-blur: blur(10px); --glass-border-color: rgba(255, 255, 255, 0.25); --glass-separator-color: rgba(0, 0, 0, 0.15); --glass-text-color: #666; --glass-text-color-header: #333; }
     .legend-table-wrapper { width: 100%; overflow: auto; backdrop-filter: var(--glass-blur); border-radius: 8px; border: 1px solid var(--glass-border-color); transition: opacity 0.25s ease-in-out; }
@@ -339,6 +339,21 @@
 	.legend-table tfoot td:first-child { z-index: 11; box-shadow: 1px 0 0 0 var(--glass-separator-color), 0 -1px 0 0 var(--glass-separator-color); }
     .legend-table td { font-size: 11px; color: var(--glass-text-color); }
     .legend-table tbody td:first-child { font-weight: 500; }
+
+    /* --- IMPROVED HOVER & ZEBRA STRIPING RULES --- */
+    .legend-table tbody tr:nth-child(even) td {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    .legend-table tbody tr:hover td {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: var(--glass-text-color-header);
+        transition: background-color 0.15s ease-in-out;
+    }
+    .legend-table tbody tr:hover td.total-value {
+        font-weight: 700;
+    }
+    /* --- END OF IMPROVED RULES --- */
+
     .legend-table th:not(:first-child), .legend-table td.total-value { text-align: right; padding-right: 15px; }
 	.legend-table td.total-value { font-family: 'Courier New', Courier, monospace; }
     .color-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.2); vertical-align: middle; margin-right: 6px; }

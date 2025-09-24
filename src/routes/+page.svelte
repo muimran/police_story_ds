@@ -1,4 +1,5 @@
 <script>
+  // Import components
   import PoliceMap from '$lib/components/PoliceMap.svelte';
   import Transfers from '$lib/components/Transfers.svelte';
   import OfficerTable from '$lib/components/OfficerTable.svelte';
@@ -88,26 +89,77 @@
   .document-figure img { width: 100%; height: auto; display: block; border: 1px solid #ddd; }
   .document-caption { font-size: 0.85rem; color: #666; font-style: italic; text-align: center; margin-top: 0.5em; line-height: 1.4; padding: 0 1rem; }
   .methodology-section { border-top: 1px solid #e0e0e0; margin-top: 4rem; padding-top: 2rem; }
+  .audio-player-wrapper { margin-top: 1.5rem; }
 </style>
-
-<nav style="text-align:center; padding: 1rem; background: #f1f1f1; font-family: sans-serif;">
-  <strong>English</strong> | <a href="/bn/">বাংলা</a>
-</nav>
 
 <Hero />
 <Headline t={t.headline} locale={t.locale} publishedDate={new Date('Wed Aug 14, 2025 12:06 PM')} />
 
 {#each contentChunks as chunk, i}
   {#if chunk.type === 'component'}
+    <!-- Handle each component type separately -->
     {#if chunk.name === 'PoliceMap'}
-      <PoliceMap texts={t.policeMap} locale={t.locale} />
-    {:else}
+      <PoliceMap 
+        texts={t.policeMap} 
+        locale={t.locale} 
+        mapLanguage={t.locale.substring(0, 2)} 
+        mapAccessToken={t.mapboxAccessToken}
+      />
+    {/if}
+
+    {#if chunk.name === 'OfficerTable'}
       <div class="article-text">
-        {#if chunk.name === 'OfficerTable'} <OfficerTable t={t.officerTable} /> {/if}
-        {#if chunk.name === 'Absconded'} <Absconded t={t.absconded} /> {/if}
-        {#if chunk.name === 'Transfers'} <Transfers t={t.transfers} /> {/if}
+        <OfficerTable t={t.officerTable} />
       </div>
     {/if}
+
+    {#if chunk.name === 'Absconded'}
+      <div class="article-text">
+        <Absconded t={t.absconded} />
+      </div>
+    {/if}
+
+    {#if chunk.name === 'Transfers'}
+      <div class="article-text">
+        <Transfers t={t.transfers} />
+      </div>
+    {/if}
+
+    {#if chunk.name === 'SourceDocuments'}
+      <div class="article-text">
+        <div class="documents-section">
+          <div class="methodology-headline" class:open={documentsOpen} on:click={() => (documentsOpen = !documentsOpen)}>
+            <span>{t.documentsSection.title}</span>
+            <div class="arrow"></div>
+          </div>
+          {#if documentsOpen}
+            <div class="methodology-content" transition:slide>
+              <figure class="document-figure">
+                <img src="{base}/images/doc1.png" alt={t.documentsSection.alt_texts[0]} />
+                <figcaption class="document-caption">{t.documentsSection.captions[0]}</figcaption>
+              </figure>
+              <figure class="document-figure">
+                <img src="{base}/images/doc2.png" alt={t.documentsSection.alt_texts[1]} />
+                <figcaption class="document-caption">{t.documentsSection.captions[1]}</figcaption>
+              </figure>
+            </div>
+          {/if}
+        </div>
+      </div>
+    {/if}
+
+    {#if chunk.name === 'AudioSection'}
+      <div class="article-text">
+        <div>
+          <h2>{t.audioSection.heading}</h2>
+          <p>{t.audioSection.text}</p>
+          <div class="audio-player-wrapper">
+            {@html t.audioSection.embedCode}
+          </div>
+        </div>
+      </div>
+    {/if}
+
   {:else if chunk.type === 'text'}
     <div class="article-text {i === 0 ? 'article-start' : ''}">
       {#each chunk.items as block}
@@ -123,27 +175,6 @@
     </div>
   {/if}
 {/each}
-
-<div class="article-text">
-  <div class="documents-section">
-    <div class="methodology-headline" class:open={documentsOpen} on:click={() => (documentsOpen = !documentsOpen)}>
-      <span>{t.documentsSection.title}</span>
-      <div class="arrow"></div>
-    </div>
-    {#if documentsOpen}
-      <div class="methodology-content" transition:slide>
-        <figure class="document-figure">
-          <img src="{base}/images/doc1.png" alt="FIR document" />
-          <figcaption class="document-caption">{t.documentsSection.captions[0]}</figcaption>
-        </figure>
-        <figure class="document-figure">
-          <img src="{base}/images/doc2.png" alt="FIR document" />
-          <figcaption class="document-caption">{t.documentsSection.captions[1]}</figcaption>
-        </figure>
-      </div>
-    {/if}
-  </div>
-</div>
 
 <div class="article-text">
   <div class="credits-section">
