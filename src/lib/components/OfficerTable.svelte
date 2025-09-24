@@ -1,8 +1,11 @@
 <script>
   import { tick, onMount } from 'svelte';
-  import { commandResponsibilityData } from '$lib/CommandResponsibility.js';
 
-  let data = $state(commandResponsibilityData);
+  // Use the modern $props() rune to declare component properties
+  let { t } = $props();
+
+  // Get data from the prop
+  let data = $state(t.data);
   let sortKey = $state('area'); 
   let sortDirection = $state('asc');
   let showAll = $state(false);
@@ -14,50 +17,60 @@
   let headerIsStuck = $state(false);
 
   $effect(() => {
+    // This robust function parses dates from a standard 'DD/MM/YY' string.
+    // It relies on the source data having English numerals in the 'date' field.
+    const parseDate = (dateStr) => {
+      if (!dateStr || typeof dateStr !== 'string' || dateStr.toLowerCase().includes('unknown')) {
+        return new Date(8640000000000000); // A very large date to sort unknown values to the bottom.
+      }
+      const [day, month, year] = dateStr.split('/').map(Number);
+      if (isNaN(day) || isNaN(month) || isNaN(year)) {
+        return new Date(8640000000000000); // Also handles malformed dates.
+      }
+      const fullYear = year < 50 ? 2000 + year : 1900 + year; 
+      return new Date(fullYear, month - 1, day);
+    };
+
     data.sort((a, b) => {
-        const valA = a[sortKey];
-        const valB = b[sortKey];
-        if (valA === 'Unknown' || valB === 'Unknown') return 0;
-        if (sortKey === 'date') {
-            const parseDate = (dateStr) => {
-                if (!dateStr || typeof dateStr !== 'string') return new Date(0);
-                const [day, month, year] = dateStr.split('/').map(Number);
-                // Handle 2-digit years
-                const fullYear = year < 50 ? 2000 + year : 1900 + year; 
-                return new Date(fullYear, month - 1, day);
-            };
-            const dateA = parseDate(valA);
-            const dateB = parseDate(valB);
-            return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
-        }
-        if (typeof valA === 'string' && typeof valB === 'string') {
-            return sortDirection === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-        }
-        if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
-        if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
-        return 0;
+      const valA = a[sortKey];
+      const valB = b[sortKey];
+
+      if (sortKey === 'date') {
+        const dateA = parseDate(valA);
+        const dateB = parseDate(valB);
+        return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+      }
+
+      // Standard string comparison for all other columns
+      if (typeof valA === 'string' && typeof valB === 'string') {
+        return sortDirection === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+      }
+      
+      // Fallback for non-string, non-date values (though not expected in this data)
+      return (valA < valB ? -1 : 1) * (sortDirection === 'asc' ? 1 : -1);
     });
   });
 
   function sortBy(key) {
     if (sortKey === key) {
-        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
-        sortKey = key;
-        sortDirection = 'asc';
+      sortKey = key;
+      sortDirection = 'asc';
     }
   }
 
   function getSortIndicator(key) {
-    if (sortKey !== key) return ' ▲▼';
+    if (sortKey !== key) return ' ';
     return sortDirection === 'asc' ? ' ▲' : ' ▼';
   }
 
   function getStatusClass(status) {
     if (!status) return ''; 
     const lowerCaseStatus = status.toLowerCase();
-    if (lowerCaseStatus.includes('arrested')) return 'status-arrested';
-    if (lowerCaseStatus.includes('absconded')) return 'status-absconded';
+    // Check for both English and Bengali keywords for styling
+    if (lowerCaseStatus.includes('arrested') || lowerCaseStatus.includes('গ্রেপ্তার')) return 'status-arrested';
+    if (lowerCaseStatus.includes('absconded') || lowerCaseStatus.includes('পলাতক')) return 'status-absconded';
     return '';
   }
 
@@ -101,12 +114,11 @@
   <table bind:this={tableElement}>
     <thead class:is-stuck={headerIsStuck}>
       <tr>
-        <!-- CHANGE 1: ADDED CLASSES TO EACH TH -->
-        <th class="col-name" on:click={() => sortBy('name')}>Name<span class="sort-indicator">{getSortIndicator('name')}</span></th>
-        <th class="col-area" on:click={() => sortBy('area')}>Area<span class="sort-indicator">{getSortIndicator('area')}</span></th>
-        <th class="col-rank" on:click={() => sortBy('rank_n_zone')}>Rank & Zone<span class="sort-indicator">{getSortIndicator('rank_n_zone')}</span></th>
-        <th class="col-status" on:click={() => sortBy('status')}>Status<span class="sort-indicator">{getSortIndicator('status')}</span></th>
-        <th class="col-date" on:click={() => sortBy('date')}>Date<span class="sort-indicator">{getSortIndicator('date')}</span></th>
+        <th class="col-name" on:click={() => sortBy('name')}>{t.uiText.nameHeader}<span class="sort-indicator">{getSortIndicator('name')}</span></th>
+        <th class="col-area" on:click={() => sortBy('area')}>{t.uiText.areaHeader}<span class="sort-indicator">{getSortIndicator('area')}</span></th>
+        <th class="col-rank" on:click={() => sortBy('rank_n_zone')}>{t.uiText.rankHeader}<span class="sort-indicator">{getSortIndicator('rank_n_zone')}</span></th>
+        <th class="col-status" on:click={() => sortBy('status')}>{t.uiText.statusHeader}<span class="sort-indicator">{getSortIndicator('status')}</span></th>
+        <th class="col-date" on:click={() => sortBy('date')}>{t.uiText.dateHeader}<span class="sort-indicator">{getSortIndicator('date')}</span></th>
       </tr>
     </thead>
     <tbody>
@@ -116,9 +128,10 @@
           <td>{row.area}</td>
           <td>{row.rank_n_zone}</td>
           <td class="{getStatusClass(row.status)}">
-            {row.status}
+            {@html row.status.replace(/\n/g, '<br/>')}
           </td>
-          <td>{row.date}</td>
+          <!-- Show the display version if it exists, otherwise fall back to the raw date -->
+          <td>{row.date_display || row.date}</td>
         </tr>
       {/each}
     </tbody>
@@ -128,16 +141,16 @@
     <div class="show-more-container">
       <button class="show-more-button" on:click={toggleShowAll}>
         {#if showAll}
-          Show Less
+          {t.uiText.showLess}
         {:else}
-          + Show More ({data.length - initialVisibleRows} more)
+          {t.uiText.showMorePrefix} ({(data.length - initialVisibleRows).toLocaleString(t.locale || 'en-US')}) {t.uiText.showMoreSuffix}
         {/if}
       </button>
     </div>
   {/if}
 
   <div class="table-caption">
-    12 officers were explicitly named in the FIRs; the remaining identifications were confirmed through interviews with at least two lower-ranked officials who served under them at the time.
+    {t.uiText.caption}
   </div>
 </div>
 
@@ -188,13 +201,11 @@
     color: #555;
   }
 
-  /* --- CHANGE 2: NEW CSS RULES FOR TWO-TIERED COLUMN SIZES --- */
   th.col-name { width: 25%; }
   th.col-area { width: 12%; }
   th.col-rank { width: 26%; }
   th.col-status { width: 25%; }
   th.col-date { width: 12%; }
-  /* --- END OF CHANGE --- */
 
   .sort-indicator {
     display: inline-block;

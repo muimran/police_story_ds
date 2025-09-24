@@ -92,9 +92,7 @@
   .audio-player-wrapper { margin-top: 1.5rem; }
 </style>
 
-<nav style="text-align:center; padding: 1rem; background: #f1f1f1; font-family: sans-serif;">
-  <a href="/">English</a> | <strong>বাংলা</strong>
-</nav>
+
 
 <Hero />
 <Headline t={t.headline} locale={t.locale} publishedDate={new Date('Wed Aug 14, 2025 12:06 PM')} />
@@ -111,17 +109,17 @@
       />
     {/if}
 
-    {#if chunk.name === 'OfficerTable'}
-      <div class="article-text">
-        <OfficerTable t={t.officerTable} />
-      </div>
-    {/if}
+{#if chunk.name === 'OfficerTable'}
+  <div class="article-text">
+    <OfficerTable t={t.officerTable} /> <!-- Change this line -->
+  </div>
+{/if}
 
-    {#if chunk.name === 'Absconded'}
-      <div class="article-text">
-        <Absconded t={t.absconded} />
-      </div>
-    {/if}
+{#if chunk.name === 'Absconded'}
+  <div class="article-text">
+    <Absconded t={t.absconded} locale={t.locale} />
+  </div>
+{/if}
 
     {#if chunk.name === 'Transfers'}
       <div class="article-text">

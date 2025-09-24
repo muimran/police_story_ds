@@ -1,0 +1,33 @@
+// src/lib/abscondedDataEn.js
+
+export const abscondedData = [
+  { id: 1, officers: 'Mirza Salahuddin, BPAA, PPM', rank: 'Additional Deputy Police Commissioner', date: '08/06/2024', note: '' },
+  { id: 2, officers: 'Mohammad Harun Or Rashid, BPM-Bar, PPM-Bar', rank: 'Additional Police Commissioner', date: '08/06/2024', note: '' },
+  { id: 3, officers: 'Mofizur Rahman Palash', rank: 'Assistant Police Commissioner', date: '08/06/2024', note: '' },
+  { id: 4, officers: 'Rifat Rahman Shamim, PPM', rank: 'Deputy Police Commissioner', date: '08/06/2024', note: '' },
+  { id: 5, officers: 'Kazi Ashraful Azim, PPM', rank: 'Deputy Police Commissioner', date: '08/06/2024', note: '' },
+  { id: 6, officers: 'Biplab Kumar Sarkar, BPM-Bar, PPM', rank: 'Joint Police Commissioner', date: '08/06/2024', note: '' },
+  { id: 7, officers: 'SM Mehedi Hasan, BPM-Bar, PPM-Bar', rank: 'Joint Police Commissioner', date: '08/06/2024', note: '' },
+  { id: 8, officers: 'Sanjit Kumar Roy, BPM-Seba, PPM-Seba', rank: 'Joint Police Commissioner', date: '08/06/2024', note: '' },
+  { id: 9, officers: 'Mohammad Zaidul Alam, PPM-Bar', rank: 'Joint Police Commissioner', date: '08/06/2024', note: '' },
+  { id: 10, officers: 'Habibur Rahman, BPM (Bar), PPM (Bar)', rank: 'Police Commissioner', date: '08/06/2024', note: '' },
+  { id: 11, officers: 'S.M. Jahangir Hasan, BPM-Bar, PPM', rank: 'Additional Deputy Police Commissioner', date: '10/08/2024', note: 'On leave and then absconded' },
+  { id: 12, officers: 'Md. Tauhidul Islam, BPM-Bar', rank: 'Additional Deputy Police Commissioner', date: '09/10/2024', note: '' },
+  { id: 13, officers: 'Rajib Das, PPM-Seba', rank: 'Additional Deputy Police Commissioner', date: '10/10/2024', note: 'On leave and then absconded' },
+  { id: 14, officers: 'Golam Ruhani', rank: 'Assistant Police Commissioner', date: '08/11/2024', note: '' },
+  { id: 15, officers: 'Rashedul Islam', rank: 'Additional Deputy Police Commissioner', date: '02/09/2025', note: '' },
+  { id: 16, officers: 'Md. Rahmat Ullah Chowdhury, BPM (Bar)', rank: 'Additional Deputy Police Commissioner', date: '02/10/2025', note: '' },
+  { id: 17, officers: 'Hasanuzzaman Molla', rank: 'Additional Deputy Police Commissioner', date: '02/12/2025', note: '' },
+  { id: 18, officers: 'Shah Md. Akhtarul Islam', rank: 'Additional Deputy Police Commissioner', date: '1/26/2025', note: '' },
+  { id: 19, officers: 'Mohammad Imrul', rank: 'Assistant Police Commissioner', date: '1/28/2025', note: '' },
+  { id: 20, officers: 'Rubayat Zaman', rank: 'Additional Deputy Police Commissioner', date: '1/29/2025', note: '' },
+  { id: 21, officers: 'Manas Kumar Poddar, PPM-Bar', rank: 'Deputy Police Commissioner', date: '10/18/2024', note: '' },
+  { id: 22, officers: 'Hasan Arafat, BPM, PPM-Seba', rank: 'Additional Deputy Police Commissioner', date: '10/19/2024', note: '' },
+  { id: 23, officers: 'Mishu Biswas, PPM-Seba', rank: 'Additional Deputy Police Commissioner', date: '10/26/2024', note: '' },
+  { id: 24, officers: 'Md. Masudur Rahman Monir', rank: 'Additional Deputy Police Commissioner', date: '11/13/2024', note: '' },
+  { id: 25, officers: 'Iftekhairul Islam', rank: 'Additional Deputy Police Commissioner', date: '2/16/2025', note: '' },
+  { id: 26, officers: 'Md. Rawshanul Haque Saikat', rank: 'Additional Deputy Police Commissioner', date: '8/25/2024', note: '' },
+  { id: 27, officers: 'Mohammad Iqbal Hossain, BPM-Seba', rank: 'Deputy Police Commissioner', date: '8/28/2024', note: '' },
+  { id: 28, officers: 'S. M. Shamim', rank: 'Additional Deputy Police Commissioner', date: '9/18/2024', note: '' },
+  { id: 29, officers: 'Nahid Ferdous', rank: 'Assistant Police Commissioner', date: '08/06/2024', note: '' }
+];

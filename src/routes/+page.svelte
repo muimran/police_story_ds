@@ -107,17 +107,17 @@
       />
     {/if}
 
-    {#if chunk.name === 'OfficerTable'}
-      <div class="article-text">
-        <OfficerTable t={t.officerTable} />
-      </div>
-    {/if}
+{#if chunk.name === 'OfficerTable'}
+  <div class="article-text">
+    <OfficerTable t={t.officerTable} /> <!-- Change this line -->
+  </div>
+{/if}
 
-    {#if chunk.name === 'Absconded'}
-      <div class="article-text">
-        <Absconded t={t.absconded} />
-      </div>
-    {/if}
+{#if chunk.name === 'Absconded'}
+  <div class="article-text">
+    <Absconded t={t.absconded} locale={t.locale} />
+  </div>
+{/if}
 
     {#if chunk.name === 'Transfers'}
       <div class="article-text">

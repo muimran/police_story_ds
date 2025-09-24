@@ -1,5 +1,18 @@
 // src/lib/translations.js
 
+// 1. Import ALL data files, including the new ones for the Absconded component
+import { commandResponsibilityData as enOfficerData } from './enCommandResponsibility.js';
+import { commandResponsibilityData as bnOfficerData } from './BnCommandResponsibility.js';
+import { abscondedData as enAbscondedData } from './abscondedDataEn.js';
+import { abscondedData as bnAbscondedData } from './abscondedDataBn.js';
+
+// 2. Helper function to convert English numerals in a string to Bengali
+const toBengaliNumerals = (engStr) => {
+  if (!engStr || typeof engStr !== 'string') return engStr;
+  const bengaliDigits = { '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪', '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯' };
+  return engStr.replace(/[0-9]/g, (digit) => bengaliDigits[digit]);
+};
+
 // A helper function to create blockquote objects
 const createQuote = (text, cite) => ({ type: 'blockquote', text, cite });
 
@@ -8,7 +21,7 @@ const createQuote = (text, cite) => ({ type: 'blockquote', text, cite });
 // ===================================================================================
 export const en = {
   locale: 'en-US',
-  mapboxAccessToken: 'pk.eyJ1IjoiaW1yYW5kYXRhIiwiYSI6ImNtZHoxOXV3YTA1dHoya3F2dG5neXRxN2oifQ.1wSQLtAiXbRlFuzwlSJ9Gg', // English Token
+  mapboxAccessToken: 'pk.eyJ1IjoiaW1yYW5kYXRhIiwiYSI6ImNtZHoxOXV3YTA1dHoya3F2dG5neXRxN2oifQ.1wSQLtAiXbRlFuzwlSJ9Gg',
 
   meta: {
     title: "Commanders of crackdown: Police leadership during July uprising uncovered | The Daily Star",
@@ -18,7 +31,6 @@ export const en = {
     ldJsonHeadline: "Commanders of crackdown: Police leadership during July uprising uncovered | The Daily Star",
   },
 
-  // ... [rest of the en object is unchanged] ...
   articleContent: [
     { type: 'p', content: "In the early hours of August 5, 2024, just hours before her fall, Sheikh Hasina reportedly convened one last secret meeting with the police and military leadership." },
     { type: 'p', content: "With hundreds already dead, she chastised the military leadership for their “handling of the situation,” multiple sources have confirmed. Pointing to the inspector general of police (IGP), she reportedly remarked, “But they’re doing really well.”" },
@@ -75,7 +87,7 @@ export const en = {
     { type: 'p', content: "Since October, at least 13 former DMP officers have deserted their posts, some even after facing arrest warrants. Eleven of these 13 officers were ADCs during the uprising, and police members under their command fired hundreds of live rounds on protesters, documents show." },
     { type: 'p', content: "Two of the officers -- ADC Rajib Das and ADC SM Jahangir Hasan -- were on medical leave in Thailand during the first week of October 2024. Neither have returned and their current whereabouts is unclear." },
     { type: 'p', content: "Like them, most of the missing officers are now believed to be abroad." },
-    { type: 'p', content: "In a statement to The Daily Star, the police headquarters said that the fugitive officers had been able to “evade arrest because the police force was in a state of total disarray at that time.”" },
+    { type: 'p', content: "In a statement to The Daily Star, the police headquarters said that the fugitive officers had been to “evade arrest because the police force was in a state of total disarray at that time.”" },
     { type: 'p', content: "However, records show that desertions have continued well into March this year, months after the initial unrest had subsided. At least two officers left the country in recent months through an international airport without facing any obstacles." },
     { type: 'p', content: "“Efforts are underway to identify the current whereabouts of the police members who are absconding. Police are actively working to locate them and are committed to taking appropriate legal and administrative measures in accordance with rules,” the statement said." },
     { type: 'component', name: 'Absconded' },
@@ -178,31 +190,59 @@ export const en = {
   audioSection: {
     heading: "An Intercepted Recording",
     text: "The following audio was reportedly intercepted on the night of July 19. It appears to feature a senior commander issuing orders to units in the field.",
-    // **IMPORTANT**: Replace this src with the real one from your SoundCloud embed code.
     embedCode: `<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=REPLACE_WITH_YOUR_SOUNDCLOUD_URL"></iframe>`
   },
 
-  officerTable: {},
-  absconded: {},
+  officerTable: {
+    data: enOfficerData,
+    formatDate: (dateStr) => dateStr,
+    uiText: {
+      nameHeader: 'Name',
+      areaHeader: 'Area',
+      rankHeader: 'Rank & Zone',
+      statusHeader: 'Status',
+      dateHeader: 'Date',
+      showLess: 'Show Less',
+      showMorePrefix: '+ Show More',
+      showMoreSuffix: 'more',
+      caption: '12 officers were explicitly named in the FIRs; the remaining identifications were confirmed through interviews with at least two lower-ranked officials who served under them at the time.'
+    }
+  },
+
+  // UPDATED SECTION
+  absconded: {
+    data: enAbscondedData,
+    title: 'Timeline of Desertion',
+    caption: 'Each dot represents an ex DMP official who has fled',
+    legendTopRanked: 'Top-Ranked',
+    legendOtherRanks: 'Other Ranks',
+    annotationText: 'Most top-ranked<br />officials fled on<br />August 6',
+    footnote: 'Since October, 13 ex-DMP officers deserted their posts—11 of them ADCs',
+    targetOfficerName: 'Mohammad Harun Or Rashid, BPM-Bar, PPM-Bar',
+    tooltipRank: 'Rank:',
+    tooltipDate: 'Date:',
+    loading: 'Loading timeline...',
+    error: 'Failed to load officer data.',
+    noData: 'No data available to display.'
+  },
 };
 
 
 // ===================================================================================
-// --- BENGALI TEXT OBJECT (Populated) ---
+// --- BENGALI TEXT OBJECT (Complete) ---
 // ===================================================================================
 export const bn = {
   locale: 'bn-BD',
-  mapboxAccessToken: 'pk.eyJ1IjoiaW1yYW5kYXRhIiwiYSI6ImNtZnducjc2ejAxNmkya3NmMDhqOWpyNDkifQ.dBdKqHtIII3RI5IgEG9ciw', // Bengali Token
+  mapboxAccessToken: 'pk.eyJ1IjoiaW1yYW5kYXRhIiwiYSI6ImNtZnducjc2ejAxNmkya3NmMDhqOWpyNDkifQ.dBdKqHtIII3RI5IgEG9ciw',
 
   meta: {
     title: "গুলির নির্দেশদাতা কর্মকর্তারা কে কোথায়? | দ্য ডেইলি স্টার",
     description: "জুলাই ২০২৪-এর অভ্যুত্থানে পুলিশের গুলির পেছনে থাকা কর্মকর্তা ও নির্দেশগুলো উন্মোচন, যেখানে শত শত মানুষ নিহত হয় এবং মূল নির্দেশদাতারা বিচার এড়িয়ে পালিয়ে যায়।",
-    author: "কিরো অধনান আহমেদ, মুহাম্মদ ইমরান",
+    author: "কিরো আদনান আহমেদ, মুহাম্মদ ইমরান",
     keywords: "জুলাই ২০২৪ বাংলাদেশ, কোটা সংস্কার আন্দোলন, শেখ হাসিনা, পুলিশি নির্যাতন, ঢাকা পুলিশ শুটিং, Jatrabari, Mirpur, Uttara, ডেটা সাংবাদিকতা",
     ldJsonHeadline: "গুলির নির্দেশদাতা কর্মকর্তারা কে কোথায়?",
   },
 
-  // ... [rest of the bn object is unchanged] ...
   articleContent: [
     { type: 'p', content: "২০২৪ সালের ৫ই আগস্ট। সকালবেলা। প্রধানমন্ত্রী শেখ হাসিনা তখনো জানেন না কয়েক ঘণ্টার মধ্যে সবকিছু নিয়ে দেশ ছেড়ে পালাতে হবে তার। আন্দোলন নিয়ন্ত্রণ করতে পুলিশ ও তিন বাহিনীর প্রধানদের গণভবনে তলব করেন তিনি।" },
     { type: 'p', content: "একাধিক সূত্র জানায়, এই ‘শেষ বৈঠকে’ আন্দোলন দমনে যথেষ্ঠ কঠোর না হওয়ায় সামরিক কর্মকর্তাদের তুলোধুনো করেন হাসিনা। এরপর পুলিশের মহাপরিদর্শকের (আইজিপি) দিকে তাকিয়ে বলেন, ‘তারা (পুলিশ) তো ভালো করছে।’" },
@@ -276,17 +316,36 @@ export const bn = {
   },
   methodologySection: {
     title: "পদ্ধতি",
-    content: [ "[পদ্ধতির বাংলা অনুবাদ এখানে]" ]
+    content: [
+      "২০২৪ সালের জুলাই মাসের শেষের দিকে ২২টি থানা থেকে পুলিশের দায়ের করা মামলার এজাহার চিফ মেট্রোপলিটন ম্যাজিস্ট্রেট (সিএমএম) আদালতে জমা দেওয়া হয়।",
+      "দ্য ডেইলি স্টার সেই এফআইআরগুলো সংগ্রহ করেছে।",
+      "এই এজাহারগুলোর একটি অংশ এবং ব্যবহৃত অস্ত্রের সারণিবদ্ধ তথ্য আমাদের সরবরাহ করেছে ‘ল’ইয়ার্স ফর এনার্জি, এনভায়রনমেন্ট অ্যান্ড ডেভেলপমেন্ট (লিড)’ নামের একটি সংগঠন।",
+      "বেশিরভাগ এজাহারে পুলিশের, কিছু ক্ষেত্রে আনসারের মতো সহযোগী সংগঠনের ব্যবহৃত অস্ত্রের ধরন ও পরিমাণ উল্লেখ করা ছিল।",
+      "ঘটনাস্থলে উপস্থিত ঊর্ধ্বতন কর্মকর্তা এবং গুলি চালানোর আদেশের কথাও এজাহারে উল্লেখ ছিল।",
+      "তবে বেশিরভাগ ক্ষেত্রেই এসব কর্মকর্তার নাম না দিয়ে তাদের পদবি ও কর্মস্থল (যেমন: ‘ডিসি, তেজগাঁও জোনের নির্দেশে’) উল্লেখ করা হয়েছে।",
+      "আমরা ‘ওয়েব্যাক মেশিন’ ব্যবহার করে ২০২৪ সালের মার্চ মাসে ডিএমপির ওয়েবসাইটে থাকা কর্মকর্তাদের (সহকারী কমিশনার থেকে পুলিশ কমিশনার পর্যন্ত) তালিকা সংগ্রহ করি।",
+      "এরপর স্বরাষ্ট্র মন্ত্রণালয় ও পুলিশের ওয়েবসাইটে প্রকাশিত মার্চ থেকে জুলাই মাস পর্যন্ত বদলি সংক্রান্ত প্রজ্ঞাপনগুলোর সঙ্গে ওই তালিকা মিলিয়ে দেখি।",
+      "এর মাধ্যমে অভ্যুত্থানের সময় ডিএমপিতে কর্মরত ৩৬৫ জন কর্মকর্তার একটি চূড়ান্ত তালিকা তৈরি করা হয়।",
+      "এজাহার ঘেঁটে আমরা প্রাণঘাতী অস্ত্র ব্যবহারের নির্দেশদাতা কর্মকর্তাদের একটি তালিকা তৈরি করি।",
+      "এর মধ্যে এমন কর্মকর্তারাও ছিলেন, যাঁদের গুলি চালানোর নির্দেশ দেওয়ার কথা সরাসরি উল্লেখ আছে, গুলি ছোড়ার সময় ঘটনাস্থলে উপস্থিত থাকার কথা নথিভুক্ত আছে, অথবা যাঁদের ‘ঊর্ধ্বতন কর্মকর্তা’ হিসেবে গুলি চালানোর অনুমতি বা নির্দেশ দেওয়ার কথা বলা হয়েছে।",
+      "এরপর আমরা তাঁদের অধীনে কর্মরত একাধিক জুনিয়র কর্মকর্তার সাক্ষাৎকার নিয়ে এই শনাক্তকরণ প্রক্রিয়াটি যাচাই করি।",
+      "অভ্যুত্থানের সময়ের ডিএমপি তালিকার সঙ্গে ২০২৪ সালের জুলাই মাসের শেষের দিকের কর্মকর্তাদের তালিকা তুলনা করে আমরা দেখি, মাত্র ৪৫ জন কর্মকর্তা নিজ পদে বহাল ছিলেন।",
+      "এর মানে হলো, বাকি ৩২০ জন হয় বদলি হয়েছেন, অবসরে গেছেন, অথবা পালিয়েছেন।",
+      "আমরা সরকারি ওয়েবসাইট থেকে আগস্ট ২০২৪-এর পর জারি হওয়া সব বদলির প্রজ্ঞাপনও সংগ্রহ করি, যার মাধ্যমে ডিএমপির ২৩৬ জন কর্মকর্তার বদলির তথ্য পাওয়া যায়।",
+      "বিশ্লেষণের সুবিধার জন্য আমাদের চার্টগুলোতে কর্মকর্তাদের দুটি ভাগে ভাগ করা হয়েছে:",
+      "শীর্ষ পদমর্যাদার কর্মকর্তা: পুলিশ কমিশনার, অতিরিক্ত পুলিশ কমিশনার, যুগ্ম পুলিশ কমিশনার, উপকমিশনার।",
+      "অন্যান্য: অতিরিক্ত উপকমিশনার, সহকারী কমিশনার।"
+    ]
   },
   credits: {
-    line: "<strong>অতিরিক্ত রিপোর্টিং:</strong> এমরুল হাসান বাপ্পী। <strong>গবেষণা:</strong> Sharmin Sikder, Mashfiq Mizan,..."
+    line: "<strong>অতিরিক্ত রিপোর্টিং:</strong> ইমরুল হাসান বাপ্পি, দীপংকর রায়, সুশান্ত ঘোষ ও সোহানুর রহমান রাফি। <strong>গবেষণা:</strong> শারমিন সিকদার, মাশফিক মিজান, অনিক আর্নল্ড ঢালী, সুব্রত রায়, সামসুল আরেফিন খান, খালিদ হোসাইন, নবিদ ইয়াসিন, বাদশা মোল্লা, তানজিলা তাসনিম, উসরাত ফাহমিদাহ ও রাহি নায়েব।"
   },
 
   headline: {
     line1: "জুলাই অভ্যুত্থান", line2: "গুলির নির্দেশদাতা", line3: "কারা সেই পুলিশ কর্মকর্তা?",
     datePublished: "প্রকাশিত:", dateUpdated: "আপডেট:",
     creditReporting: "রিপোর্টিং:", creditDataViz: "ডেটা ভিজ্যুয়ালাইজেশন ও ম্যাপ:", creditGraphics: "গ্রাফিক্স:", creditEditing: "সম্পাদনা:",
-    nameReporting: "কিরো অধনান আহমেদ", nameDataViz: "মুহাম্মদ ইমরান", nameGraphics: "আনোয়ার সোহেল", nameEditing: "মার্টিন স্বপন পান্ডে",
+    nameReporting: "কিরো আদনান আহমেদ", nameDataViz: "মুহাম্মদ ইমরান", nameGraphics: "আনোয়ার সোহেল", nameEditing: "মার্টিন স্বপন পান্ডে",
   },
 
   policeMap: {
@@ -306,7 +365,7 @@ export const bn = {
       "13": "কারফিউয়ের প্রথম দিনে ঢাকার পাঁচ এলাকায় আরও প্রায় ৫ হাজার রাউন্ড প্রাণঘাতী গুলি ছোড়ে পুলিশ।"
     },
     thanaNames: {
-                "Badda": "বাড্ডা", "Dhanmondi": "ধানমন্ডি", "Kalabagan": "কলাবাগান", "Kodomtoli": "কদমতলী", "Motijheel": "মতিঝিল", "Jatrabari": "যাত্রাবাড়ী", 
+        "Badda": "বাড্ডা", "Dhanmondi": "ধানমন্ডি", "Kalabagan": "কলাবাগান", "Kodomtoli": "কদমতলী", "Motijheel": "মতিঝিল", "Jatrabari": "যাত্রাবাড়ী", 
         "Kafrul": "কাফরুল", "Uttara West": "উত্তরা পশ্চিম", "Mohammadpur": "মোহাম্মদপুর", "Rampura": "রামপুরা", "New Market": "নিউ মার্কেট", "Mohakhali": "মহাখালী", 
         "Paltan": "পল্টন", "Pallabi": "পল্লবী", "Shahbagh": "শাহবাগ", "Malibagh": "মালিবাগ", "Uttara East": "উত্তরা পূর্ব", "Gulshan": "গুলশান", "Adabor": "আদাবর", 
         "DU Area": "ঢাবি এলাকা", "Ramna": "রমনা"
@@ -337,10 +396,47 @@ export const bn = {
   audioSection: {
     heading: "একটি ইন্টারসেপ্টেড রেকর্ডিং",
     text: "এই অডিওটি ১৯ জুলাই রাতে ইন্টারসেপ্ট করা হয়েছে বলে জানা গেছে। এতে একজন সিনিয়র কমান্ডারকে মাঠে থাকা ইউনিটগুলোকে নির্দেশ দিতে শোনা যায়।",
-    // **IMPORTANT**: Replace this src with the real one from your SoundCloud embed code.
     embedCode: `<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=REPLACE_WITH_YOUR_SOUNDCLOUD_URL"></iframe>`
   },
 
-  officerTable: {},
-  absconded: {},
+  officerTable: {
+    data: bnOfficerData,
+    formatDate: toBengaliNumerals,
+    uiText: {
+      nameHeader: 'নাম',
+      areaHeader: 'এলাকা',
+      rankHeader: 'পদবি ও জোন',
+      statusHeader: 'স্ট্যাটাস',
+      dateHeader: 'তারিখ',
+      showLess: 'কম দেখান',
+      showMorePrefix: '+ আরও',
+      showMoreSuffix: 'দেখুন',
+      caption: 'এফআইআর-এ ১২ জন কর্মকর্তার নাম স্পষ্টভাবে উল্লেখ করা হয়েছিল; বাকিদের শনাক্তকরণ সেই সময়ে তাদের অধীনে কর্মরত কমপক্ষে দুজন নিম্নপদস্থ কর্মকর্তার সাক্ষাৎকারের মাধ্যমে নিশ্চিত করা হয়েছে।'
+    }
+  },
+
+  // UPDATED SECTION
+  absconded: {
+    data: bnAbscondedData,
+    title: 'কর্মকর্তাদের পলায়নের সময়রেখা',
+    caption: 'প্রতিটি ডট একজন পলাতক সাবেক ডিএমপি কর্মকর্তাকে প্রতিনিধিত্ব করে',
+    legendTopRanked: 'শীর্ষ কর্মকর্তা',
+    legendOtherRanks: 'অন্যান্য পদ',
+    annotationText: 'শীর্ষ কর্মকর্তাদের<br />বেশিরভাগই পালিয়েছেন<br />৬ আগস্ট',
+    footnote: 'অক্টোবরের পর থেকে ১৩ জন সাবেক ডিএমপি কর্মকর্তা তাদের পদ ছেড়েছেন—যাদের মধ্যে ১১ জনই এডিসি।',
+    targetOfficerName: 'মোহাম্মদ হারুন অর রশীদ বিপিএম-বার, পিপিএম-বার',
+    tooltipRank: 'পদ:',
+    tooltipDate: 'তারিখ:',
+    loading: 'টাইমলাইন লোড হচ্ছে...',
+    error: 'কর্মকর্তাদের ডেটা লোড করা যায়নি।',
+    noData: 'প্রদর্শনের জন্য কোনো ডেটা উপলব্ধ নেই।',
+    rankMap: {
+        'অতিরিক্ত পুলিশ কমিশনার': 'Additional Police Commissioner',
+        'সহকারী পুলিশ কমিশনার': 'Assistant Police Commissioner',
+        'উপপুলিশ কমিশনার': 'Deputy Police Commissioner',
+        'যুগ্ম পুলিশ কমিশনার': 'Joint Police Commissioner',
+        'পুলিশ কমিশনার': 'Police Commissioner',
+        'অতিরিক্ত উপপুলিশ কমিশনার': 'Additional Deputy Police Commissioner'
+    }
+  },
 };
