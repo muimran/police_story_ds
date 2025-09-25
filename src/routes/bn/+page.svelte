@@ -27,7 +27,7 @@
     return acc;
   }, []);
 
-  const canonicalURL = "https://policestory.thedailystar.net/bn/";
+  const canonicalURL = "https://policestory.thedailystar.net/";
   const socialImageURL = "https://policestory.thedailystar.net/images/social.jpeg";
   const yourTwitterHandle = "@dailystarnews";
   const pubDate = new Date('2025-08-14').toISOString();
@@ -50,7 +50,7 @@
   <meta name="twitter:description" content={t.meta.description} />
   <meta name="twitter:image" content={socialImageURL} />
   <meta name="twitter:creator" content={yourTwitterHandle} />
-  <link rel="canonical" href="https://policestory.thedailystar.net/bn/" />
+  <link rel="canonical" href="https://policestory.thedailystar.net/" />
   <link rel="alternate" hreflang="en" href="https://policestory.thedailystar.net/" />
   <link rel="alternate" hreflang="bn" href="https://policestory.thedailystar.net/bn/" />
   <script type="application/ld+json">
@@ -91,8 +91,6 @@
   .methodology-section { border-top: 1px solid #e0e0e0; margin-top: 4rem; padding-top: 2rem; }
   .audio-player-wrapper { margin-top: 1.5rem; }
 </style>
-
-
 
 <Hero />
 <Headline t={t.headline} locale={t.locale} publishedDate={new Date('Wed Aug 14, 2025 12:06 PM')} />
