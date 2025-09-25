@@ -1,3 +1,4 @@
+<!-- src/lib/components/Headline.svelte -->
 <script>
   // --- Component Props ---
   export let t; // Receives the 'headline' text object
@@ -5,9 +6,17 @@
   export let publishedDate;
   export let updatedDate;
 
-  // Helper function to format dates into a readable string
+  // --- MODIFIED LOGIC ---
+  // This function now intelligently chooses the right formatter.
   const formatDate = (date) => {
     if (!date) return '';
+
+    // If a custom 'formatDate' function exists in our translation object (e.g., in bn.headline), use it.
+    if (t.formatDate && typeof t.formatDate === 'function') {
+      return t.formatDate(date);
+    }
+
+    // Otherwise, use the default browser-based formatter (for English).
     return date.toLocaleDateString(locale || 'en-US', {
         weekday: 'long',
         year: 'numeric',
@@ -16,11 +25,12 @@
     });
   };
 
-  // Reactive declarations to automatically format dates when props change
+  // Reactive declarations now use our new, smarter formatDate function
   $: formattedPublished = formatDate(publishedDate);
   $: formattedUpdated = formatDate(updatedDate);
 </script>
 
+<!-- THE REST OF YOUR COMPONENT REMAINS EXACTLY THE SAME -->
 <div class="headline-container">
   <h1 class="article-headline">
       <span class="line-1">{t.line1}</span>
@@ -37,7 +47,7 @@
               </time>
           </p>
       {/if}
-      {#if formattedUpdated && formattedUpdated !== formattedPublished}
+      {#if updatedDate && formattedUpdated !== formattedPublished}
           <p>
               <span class="date-label">{t.dateUpdated}</span>
               <time datetime={updatedDate.toISOString()}>
@@ -47,7 +57,6 @@
       {/if}
   </div>
 
-  <!-- CORRECTED BYLINE SECTION -->
   <div class="byline">
       <p><span class="credit-label">{t.creditReporting}</span>{t.nameReporting}</p>
       <p><span class="credit-label">{t.creditDataViz}</span>{t.nameDataViz}</p>
@@ -56,6 +65,7 @@
   </div>
 </div>
 
+<!-- YOUR STYLES REMAIN UNCHANGED -->
 <style>
   :root {
     --headline-red: #B91C1C;

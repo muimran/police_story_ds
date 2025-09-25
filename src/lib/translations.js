@@ -8,13 +8,27 @@ import { abscondedData as bnAbscondedData } from './abscondedDataBn.js';
 
 // 2. Helper function to convert English numerals in a string to Bengali
 const toBengaliNumerals = (engStr) => {
-  if (!engStr || typeof engStr !== 'string') return engStr;
+  if (typeof engStr !== 'string' && typeof engStr !== 'number') return engStr;
+  const str = String(engStr);
   const bengaliDigits = { '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪', '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯' };
-  return engStr.replace(/[0-9]/g, (digit) => bengaliDigits[digit]);
+  return str.replace(/[0-9]/g, (digit) => bengaliDigits[digit]);
 };
 
 // A helper function to create blockquote objects
 const createQuote = (text, cite) => ({ type: 'blockquote', text, cite });
+
+// --- NEW: Bengali Date Formatting Data and Function ---
+const bnMonths = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"];
+const bnWeekdays = ["রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"];
+
+const formatBengaliDate = (date) => {
+  if (!date) return '';
+  const day = bnWeekdays[date.getDay()];
+  const month = bnMonths[date.getMonth()];
+  const dateNum = toBengaliNumerals(date.getDate());
+  const year = toBengaliNumerals(date.getFullYear());
+  return `${day}, ${dateNum} ${month}, ${year}`;
+};
 
 // ===================================================================================
 // --- ENGLISH TEXT OBJECT (Complete) ---
@@ -188,8 +202,8 @@ export const en = {
   },
 
   audioSection: {
-    heading: "An Intercepted Recording",
-    text: "The following audio was reportedly intercepted on the night of July 19. It appears to feature a senior commander issuing orders to units in the field.",
+    heading: "New Section",
+    text: "Placeholder text...",
     embedCode: `<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=REPLACE_WITH_YOUR_SOUNDCLOUD_URL"></iframe>`
   },
 
@@ -209,7 +223,6 @@ export const en = {
     }
   },
 
-  // UPDATED SECTION
   absconded: {
     data: enAbscondedData,
     title: 'Timeline of Desertion',
@@ -315,7 +328,7 @@ export const bn = {
     alt_texts: [ "এফআইআর ডকুমেন্ট যেখানে কর্মকর্তাদের পদমর্যাদা অনুসারে উল্লেখ করা হয়েছে", "এফআইআর ডকুমেন্ট যেখানে একজন নির্দিষ্ট কর্মকর্তাকে গুলি করার আদেশদাতা হিসেবে নাম দেওয়া হয়েছে" ]
   },
   methodologySection: {
-    title: "পদ্ধতি",
+    title: "যেভাবে দ্য ডেইলি স্টার অনুসন্ধানটি করেছে",
     content: [
       "২০২৪ সালের জুলাই মাসের শেষের দিকে ২২টি থানা থেকে পুলিশের দায়ের করা মামলার এজাহার চিফ মেট্রোপলিটন ম্যাজিস্ট্রেট (সিএমএম) আদালতে জমা দেওয়া হয়।",
       "দ্য ডেইলি স্টার সেই এফআইআরগুলো সংগ্রহ করেছে।",
@@ -342,10 +355,12 @@ export const bn = {
   },
 
   headline: {
-    line1: "জুলাই অভ্যুত্থান", line2: "গুলির নির্দেশদাতা", line3: "কারা সেই পুলিশ কর্মকর্তা?",
+    line1: "জুলাই অভ্যুত্থান", line2: "গুলির নির্দেশদাতা", line3: "কর্মকর্তারা কে কোথায়?",
     datePublished: "প্রকাশিত:", dateUpdated: "আপডেট:",
     creditReporting: "রিপোর্টিং:", creditDataViz: "ডেটা ভিজ্যুয়ালাইজেশন ও ম্যাপ:", creditGraphics: "গ্রাফিক্স:", creditEditing: "সম্পাদনা:",
     nameReporting: "কিরো আদনান আহমেদ", nameDataViz: "মুহাম্মদ ইমরান", nameGraphics: "আনোয়ার সোহেল", nameEditing: "মার্টিন স্বপন পান্ডে",
+    // --- THIS IS THE KEY CHANGE ---
+    formatDate: formatBengaliDate
   },
 
   policeMap: {
@@ -381,10 +396,10 @@ export const bn = {
     scrollySteps: [
       { title: 'ডিএমপির মোট কর্মকর্তাবৃন্দ', description: 'অভ্যুত্থানকালে ঢাকা মহানগরে এসি ও উপরের র‍্যাংকের মোট <span style="background-color: #9ca3af; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">৩৬৫ জন</span> পুলিশ কর্মকর্তা ছিলেন। প্রতিটি ডট একজন পুলিশ কর্মকর্তাকে প্রতিনিধিত্ব করে।' },
       { title: '৮৮% সরানো হয়েছে', description: 'এক বছর পর, তাদের মধ্যে মাত্র ৪৫ জন এখনো ডিএমপিতে আছেন।<span style="background-color: #663399; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">বাকি ৩২০ জন</span> হয় বদলি হয়েছেন, অবসর নিয়েছেন বা পালিয়েছেন। ডেইলি স্টার ২৩৬ জন সিনিয়র কর্মকর্তার বদলির তথ্য পেয়েছে।' },
-      { title: 'কমান্ডে বিভাজন', description: 'বদলি হওয়া কর্মকর্তাদের মধ্যে ৬৪ জন <span style="background-color: #fdba74; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">ডিসি বা উপরের র‍্যাংকের।</span> বাকি ১৭২ জন <span style="background-color: #4E79A7; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">এডিসি বা এসি র‍্যাংকধারী।</span>' },
-      { title: 'বদলির গন্তব্য', description: 'ডিএমপি কর্মকর্তাদের মোট ২১টি ভিন্ন ভিন্ন দপ্তরে বদলি করা হয়েছে। সিনিয়র কর্মকর্তাদের ৪৫ শতাংশই বদলি হয়েছেন রেঞ্জ ডিআইজির কার্যালয়ে (কেন্দ্রীয় ও আঞ্চলিক প্রশাসন)। তবে সবচেয়ে বেশি। তবে সামগ্রিকভাবে সবচেয়ে বেশি কর্মকর্তা বদলি হয়েছেন র‍্যাব ও এপিবিএনের মতো বিশেষায়িত অপারেশনাল ইউনিটগুলোতে।' },
-      { title: 'সংযুক্ত কর্মকর্তা', description: 'বদলি হওয়া কর্মকর্তাদের মধ্যে ১৪ শতাংশকে ‘সংযুক্ত’ করা হয়েছে। পুলিশের পরিভাষায় যখন কোনো কর্মকর্তাকে সংযুক্ত করা হয়, তখন তার নির্দিষ্ট দায়িত্ব থাকে না। অর্থাৎ, আনুষ্ঠানিকভাবে বরখাস্ত না করে সেই কর্মকর্তাকে সংযুক্ত করা হয়।' },
-      { title: 'চূড়ান্ত চিত্র', description: 'ডিসি ও এর উপরের পদমর্যাদার কর্মকর্তাদের অর্ধেককেই বিভিন্ন জায়গায় সংযুক্ত করে রাখা হয়েছে। এবং ডিসির নিচে র‍্যাংকধারী একজন কর্মকর্তাকেও সংযুক্ত করা হয়নি।' }
+      { title: 'কমান্ডে বিভাজন', description: 'বদলি হওয়া কর্মকর্তাদের মধ্যে ৬৪ জন <span style="background-color: #fdba74; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">ডিসি বা উপরের র‍্যাংকের।</span> বাকি ১৭২ জন <span style="background-color: #4E79A7; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">এডিসি বা এসি র‍্যাংকধারী।</span>' },
+      { title: 'বদলির গন্তব্য', description: 'ডিএমপি কর্মকর্তাদের মোট ২১টি ভিন্ন ভিন্ন দপ্তরে বদলি করা হয়েছে। সিনিয়র কর্মকর্তাদের ৪৫ শতাংশই বদলি হয়েছেন রেঞ্জ ডিআইজির কার্যালয়ে (কেন্দ্রীয় ও আঞ্চলিক প্রশাসন)। তবে সবচেয়ে বেশি। তবে সামগ্রিকভাবে সবচেয়ে বেশি কর্মকর্তা বদলি হয়েছেন র‍্যাব ও এপিবিএনের মতো বিশেষায়িত অপারেশনাল ইউনিটগুলোতে।' },
+      { title: 'সংযুক্ত কর্মকর্তা', description: 'বদলি হওয়া কর্মকর্তাদের মধ্যে ১৪ শতাংশকে ‘সংযুক্ত’ করা হয়েছে। পুলিশের পরিভাষায় যখন কোনো কর্মকর্তাকে সংযুক্ত করা হয়, তখন তার নির্দিষ্ট দায়িত্ব থাকে না। অর্থাৎ, আনুষ্ঠানিকভাবে বরখাস্ত না করে সেই কর্মকর্তাকে সংযুক্ত করা হয়।' },
+      { title: 'চূড়ান্ত চিত্র', description: 'ডিসি ও এর উপরের পদমর্যাদার কর্মকর্তাদের অর্ধেককেই বিভিন্ন জায়গায় সংযুক্ত করে রাখা হয়েছে। এবং ডিসির নিচে র‍্যাংকধারী একজন কর্মকর্তাকেও সংযুক্ত করা হয়নি।' }
     ],
     tooltipLabels: { id: "আইডি", rank: "পদমর্যাদা", rank_level: "পদের স্তর", destination_cluster: "বদলি ক্লাস্টার", attached: "সংযুক্ত", yes: "হ্যাঁ", no: "না", not_applicable: "প্রযোজ্য নয়" },
     clusterLabels: {
@@ -394,8 +409,8 @@ export const bn = {
   },
 
   audioSection: {
-    heading: "একটি ইন্টারসেপ্টেড রেকর্ডিং",
-    text: "এই অডিওটি ১৯ জুলাই রাতে ইন্টারসেপ্ট করা হয়েছে বলে জানা গেছে। এতে একজন সিনিয়র কমান্ডারকে মাঠে থাকা ইউনিটগুলোকে নির্দেশ দিতে শোনা যায়।",
+    heading: "নতুন সেকশন",
+    text: "প্লেস হোল্ডার টেক্সট......",
     embedCode: `<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=REPLACE_WITH_YOUR_SOUNDCLOUD_URL"></iframe>`
   },
 
@@ -415,14 +430,13 @@ export const bn = {
     }
   },
 
-  // UPDATED SECTION
   absconded: {
     data: bnAbscondedData,
-    title: 'কর্মকর্তাদের পলায়নের সময়রেখা',
+    title: 'কর্মকর্তাদের পলায়নের সময়রেখা',
     caption: 'প্রতিটি ডট একজন পলাতক সাবেক ডিএমপি কর্মকর্তাকে প্রতিনিধিত্ব করে',
     legendTopRanked: 'শীর্ষ কর্মকর্তা',
     legendOtherRanks: 'অন্যান্য পদ',
-    annotationText: 'শীর্ষ কর্মকর্তাদের<br />বেশিরভাগই পালিয়েছেন<br />৬ আগস্ট',
+    annotationText: 'শীর্ষ কর্মকর্তাদের<br />বেশিরভাগই পালিয়েছেন<br />৬ আগস্ট',
     footnote: 'অক্টোবরের পর থেকে ১৩ জন সাবেক ডিএমপি কর্মকর্তা তাদের পদ ছেড়েছেন—যাদের মধ্যে ১১ জনই এডিসি।',
     targetOfficerName: 'মোহাম্মদ হারুন অর রশীদ বিপিএম-বার, পিপিএম-বার',
     tooltipRank: 'পদ:',

@@ -93,7 +93,7 @@
 </style>
 
 <Hero />
-<Headline t={t.headline} locale={t.locale} publishedDate={new Date('Wed Aug 14, 2025 12:06 PM')} />
+<Headline t={t.headline} locale={t.locale} publishedDate={new Date('Mon Sep 29, 2025 12:06 PM')} />
 
 {#each contentChunks as chunk, i}
   {#if chunk.type === 'component'}
