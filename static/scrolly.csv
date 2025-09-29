@@ -1,6 +1,6 @@
 sl,thana,lat,lon,zoom,amo_type,action,date,position,overlay_color
-1,0,23.7780453,90.38789,10,,,centre,ffffff
-2,Mohakhali,23.7780453,90.38789,13.4,"lethal, non_lethal",show_map,16/07/2024,,
+1,0,23.7780453,90.38789,10,,,centre,ffffff,
+2,Banani,23.7780453,90.38789,13.4,"lethal, non_lethal",show_map,16/07/2024,,
 3,DU Area,23.72719,90.38218,13.4,"lethal, non_lethal",show_map,17/07/2024,,
 4,Jatrabari,23.703,90.41932,13.4,"lethal, rubber",show_map,17/07/2024,,
 5,All,23.79,90.3926756,11,"lethal, rubber",show_map,18/07/2024,,
@@ -10,5 +10,6 @@ sl,thana,lat,lon,zoom,amo_type,action,date,position,overlay_color
 9,"Uttara West, Uttara East",23.79,90.3926756,11,"lethal, rubber",zoom_map,19/07/2024,,
 10,All,23.79,90.3926756,11,t56,zoom_map,19/07/2024,,
 11,0,23.79,90.3926756,11,0,zoom_map,19/07/2024,centre,ffffff
-12,All,23.79,90.3926756,11,"lethal, rubber",zoom_map,20/07/2024,,
-13,0,23.79,90.3926756,10,,,,centre,ffffff
+12,All,23.79,90.3926756,11,"lethal, rubber",zoom_map,19/07/2024,centre,ffffff
+13,0,23.79,90.3926756,10,,,20/07/2024,centre,ffffff
+14,0,23.79,90.3926756,10,,,20/07/2024,centre,ffffff

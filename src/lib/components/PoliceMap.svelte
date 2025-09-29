@@ -325,7 +325,7 @@
     .gradient-top, .gradient-bottom { position: absolute; left: 0; right: 0; z-index: 1; pointer-events: none; }
     .gradient-top { top: 0; height: 8%; background: linear-gradient(to bottom, white 0%, transparent 100%); }
     .gradient-bottom { bottom: 0; height: 8%; background: linear-gradient(to top, white 0%, transparent 100%); }
-    .legend-container-desktop { position: fixed; bottom: 40px; right: 20px; left: auto; top: auto; transform: none; z-index: 5; width: 270px; max-height: 63vh; display: flex; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; }
+    .legend-container-desktop { position: fixed; bottom: 40px; right: 20px; left: auto; top: auto; transform: none; z-index: 5; width: 320px; max-height: 63vh; display: flex; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; }
     .legend-container-desktop.visible { opacity: 1; pointer-events: auto; }
 	:root { --glass-bg: rgba(255, 255, 255, 0.2); --glass-blur: blur(10px); --glass-border-color: rgba(255, 255, 255, 0.25); --glass-separator-color: rgba(0, 0, 0, 0.15); --glass-text-color: #666; --glass-text-color-header: #333; }
     .legend-table-wrapper { width: 100%; overflow: auto; backdrop-filter: var(--glass-blur); border-radius: 8px; border: 1px solid var(--glass-border-color); transition: opacity 0.25s ease-in-out; }

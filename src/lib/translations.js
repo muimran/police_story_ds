@@ -168,15 +168,16 @@ export const en = {
         "5": "Police used lethal weapons in at least 13 areas of Dhaka. According to the police FIR, more than 10,000 lethal bullets were fired in Dhaka metropolis that day, about half of which were in Jatrabari.",
         "6": "Three sub-inspectors (SIs) working at Shahbagh, Mohammadpur and Uttara West police stations said on condition of anonymity that they were instructed to take more lead cartridges instead of rubber for shotguns that day.",
         "7": "On the same day, then Prime Minister Sheikh Hasina approved the use of lethal weapons. In <a href=\"https://soundcloud.com/thedailystar/hasinas-deadly-order-during-july-uprising-1\" target=\"_blank\" rel=\"noopener noreferrer\">a phone conversation</a> verified by The Daily Star, she was heard saying that the protesters should be 'shot wherever they are found'. About 100 protesters were killed across the country that day.",
-        "8": "The bloodiest day of July, the death toll across the country stood at about 300. More than three times as many lethal bullets as rubber bullets were used in the capital that day.",
+        "8": "Friday marked the bloodiest day of July. The death toll across the country stood at about 300. More than three times as many lethal bullets as rubber bullets were used in the capital that day.",
         "9": "More than 80 percent of the total ammunition in Uttara Sector 12, Gulshan, Mohakhali and Jatrabari was lethal.",
         "10": "The use of T56 assault rifles also increased dramatically on this day. According to the UN report, the highest number of people were killed by this weapon in the uprising.",
         "11": "On condition of anonymity, an SI told The Daily Star, 'This is the most lethal weapon. You can target from 300 meters away with it.'",
         "12": "Weapons experts say the Type 56 rifle is made for use on the battlefield and is capable of penetrating many bulletproof vests. This weapon is never used in law enforcement.",
-        "13": "On the first day of the curfew, police fired about 5,000 more rounds of lethal ammunition in five areas of Dhaka."
+        "13": "On the first day of the curfew, police fired about 5,000 more rounds of lethal ammunition in five areas of Dhaka.",
+        "14": "In the first six days of the crackdown (from July 16 to 21), police and affiliated forces in the DMP area fired at least 34,412 live rounds across 22 protest sites."
     },
     thanaNames: {
-        "Kodomtoli": "Kodomtoli", "Jatrabari": "Jatrabari", "Kafrul": "Kafrul", "Uttara West": "Uttara West", "Mohammadpur": "Mohammadpur", "Rampura": "Rampura", "New Market": "New Market", "Mohakhali": "Mohakhali", "Paltan": "Paltan", "Pallabi": "Pallabi", "Shahbagh": "Shahbagh", "Malibagh": "Malibagh", "Uttara East": "Uttara East", "Gulshan": "Gulshan", "Adabor": "Adabor", "DU Area": "DU Area"
+        "Kodomtoli": "Kodomtoli", "Jatrabari": "Jatrabari", "Kafrul": "Kafrul", "Uttara West": "Uttara West", "Mohammadpur": "Mohammadpur", "Rampura": "Rampura", "New Market": "New Market", "Banani": "Banani", "Paltan": "Paltan", "Pallabi": "Pallabi", "Shahbagh": "Shahbagh", "Malibagh": "Malibagh", "Uttara East": "Uttara East", "Gulshan": "Gulshan", "Adabor": "Adabor", "DU Area": "DU Area"
     },
     uiText: {
         thanaHeader: "Thana", totalLabel: "Total",
@@ -372,17 +373,18 @@ export const bn = {
       "5": "ঢাকার অন্তত ১৩টি এলাকায় মরণাস্ত্র ব্যবহার করে পুলিশ। পুলিশের এজাহার অনুযায়ী, সেদিন ঢাকা মহানগরে ১০ হাজারের বেশি প্রাণঘাতী বুলেট ছোড়া হয়, যার প্রায় অর্ধেকই ছিল যাত্রাবাড়ীতে।",
       "6": "শাহবাগ, মোহাম্মদপুর ও উত্তরা পশ্চিম থানায় কর্মরত তিনজন উপপরিদর্শক (এসআই) নাম প্রকাশ না করার শর্তে জানান, সেদিন শটগানের জন্য রাবারের বদলে বেশি করে সিসা কার্তুজ নেওয়ার নির্দেশ দেওয়া হয়েছিল তাদের।",
       "7": "একইদিনে তৎকালীন প্রধানমন্ত্রী শেখ হাসিনা ‘লিথাল' অস্ত্র অস্ত্র ব্যবহারের অনুমোদন দেন। দ্য ডেইলি স্টারের যাচাই করা <a href=\"https://soundcloud.com/thedailystar/hasinas-deadly-order-during-july-uprising-1\" target=\"_blank\" rel=\"noopener noreferrer\">একটি ফোনালাপে</a> তাকে বলতে শোনা যায়, আন্দোলনকারীদের ‘যেখানেই পাবে, গুলি করবে'। সারাদেশে প্রায় ১০০ আন্দোলনকারী নিহত হয় সেদিন।",
-      "8": "জুলাই মাসের সবচেয়ে রক্তক্ষয়ী দিন, সারাদেশে নিহতের সংখ্যা দাঁড়ায় প্রায় ৩০০তে। রাজধানীতে রাবার বুলেটের চেয়ে তিনগুণেরও বেশি প্রাণঘাতী গুলি ব্যবহার করা হয় সেদিন।",
+      "8": "শুক্রবার ছিল জুলাই মাসের সবচেয়ে রক্তক্ষয়ী দিন। সারাদেশে নিহতের সংখ্যা দাঁড়ায় প্রায় ৩০০। রাজধানীতে সেদিন রাবার বুলেটের চেয়ে তিনগুণেরও বেশি প্রাণঘাতী বুলেট ব্যবহার করা হয়।",
       "9": "উত্তরা ১২ নম্বর সেক্টর, গুলশান, মহাখালী ও যাত্রাবাড়ীতে মোট গোলাবারুদের ৮০ শতাংশেরও বেশি ছিল প্রাণঘাতী গুলি।",
-      "10": "এদিন টি৫৬ অ্যাসল্ট রাইফেলের ব্যবহারও ব্যাপক হারে বেড়ে যায়। জাতিসংঘের প্রতিবেদন অনুযায়ী, অভ্যুত্থানে সর্বোচ্চ মানুষ মারা গেছে এই অস্ত্রের গুলিতেই।",
+      "10": "এদিন টি৫৬ (T56) অ্যাসল্ট রাইফেলের ব্যবহারও ব্যাপক হারে বেড়ে যায়। জাতিসংঘের প্রতিবেদন অনুযায়ী, অভ্যুত্থানে সর্বোচ্চ মানুষ মারা গেছে এই অস্ত্রের গুলিতেই।",
       "11": "নাম প্রকাশ না করার শর্তে একজন এসআই দ্য ডেইলি স্টারকে বলেন, ‘এটাই সবচেয়ে লিথাল অস্ত্র। এটা দিয়ে ৩০০ মিটার দূর থেকে টার্গেট করতে পারবেন আপনি।'",
       "12": "অস্ত্র বিশেষজ্ঞরা বলছেন, টাইপ ৫৬ রাইফেল যুদ্ধক্ষেত্রে ব্যবহারের জন্য তৈরি, যা অনেক বুলেটপ্রুফ ভেস্টকেও ভেদ করতে সক্ষম। আইনশৃঙ্খলা নিয়ন্ত্রণে কখনোই এই অস্ত্র ব্যবহার করা হয় না।",
-      "13": "কারফিউয়ের প্রথম দিনে ঢাকার পাঁচ এলাকায় আরও প্রায় ৫ হাজার রাউন্ড প্রাণঘাতী গুলি ছোড়ে পুলিশ।"
+      "13": "কারফিউয়ের প্রথম দিনে ঢাকার পাঁচ এলাকায় আরও প্রায় ৫ হাজার রাউন্ড প্রাণঘাতী গুলি ছোড়ে পুলিশ।",
+      "14": "ফাইনাল স্ক্রল: জুলাই ১৬ থেকে ২১ পর্যন্ত, রক্তক্ষয়ী আন্দোলনের প্রথম ছয় দিনে ঢাকার ২২টি হটস্পটে পুলিশ ও সহযোগ সংস্থাগুলো অন্তত ৩৪ হাজার ৪১২ রাউন্ড প্রাণঘাতী বুলেট ছুঁড়েছে।"
     },
     thanaNames: {
         "Badda": "বাড্ডা", "Dhanmondi": "ধানমন্ডি", "Kalabagan": "কলাবাগান", "Kodomtoli": "কদমতলী", "Motijheel": "মতিঝিল", "Jatrabari": "যাত্রাবাড়ী", 
-        "Kafrul": "কাফরুল", "Uttara West": "উত্তরা পশ্চিম", "Mohammadpur": "মোহাম্মদপুর", "Rampura": "রামপুরা", "New Market": "নিউ মার্কেট", "Mohakhali": "মহাখালী", 
-        "Paltan": "পল্টন", "Pallabi": "পল্লবী", "Shahbagh": "শাহবাগ", "Malibagh": "মালিবাগ", "Uttara East": "উত্তরা পূর্ব", "Gulshan": "গুলশান", "Adabor": "আদাবর", 
+        "Kafrul": "কাফরুল", "Uttara West": "উত্তরা পশ্চিম", "Mohammadpur": "মোহাম্মদপুর", "Rampura": "রামপুরা", "New Market": "নিউ মার্কেট", "Banani": "বনানী", 
+        "Paltan": "পল্টন", "Pallabi": "পল্লবী", "Shahbagh": "শাহবাগ", "Shahjahanpur": "শাহজাহানপুর", "Uttara East": "উত্তরা পূর্ব", "Gulshan": "গুলশান", "Adabor": "আদাবর", 
         "DU Area": "ঢাবি এলাকা", "Ramna": "রমনা"
       },
     uiText: {
