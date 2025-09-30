@@ -8,7 +8,7 @@
   import Headline from '$lib/components/Headline.svelte';
   import { base } from '$app/paths'; 
   import { slide } from 'svelte/transition';
-  import { bn as t } from '$lib/translations.js';
+  import { en as t } from '$lib/translations.js';
 
   let methodologyOpen = false;
   let documentsOpen = false;

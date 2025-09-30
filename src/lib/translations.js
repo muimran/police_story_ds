@@ -173,7 +173,7 @@ export const en = {
         "10": "The use of T56 assault rifles also increased dramatically on this day. According to the UN report, the highest number of people were killed by this weapon in the uprising.",
         "11": "On condition of anonymity, an SI told The Daily Star, 'This is the most lethal weapon. You can target from 300 meters away with it.'",
         "12": "Weapons experts say the Type 56 rifle is made for use on the battlefield and is capable of penetrating many bulletproof vests. This weapon is never used in law enforcement.",
-        "13": "On the first day of the curfew, police fired about 5,000 more rounds of lethal ammunition in five areas of Dhaka.",
+        "13": "On the first day of the curfew, police fired about 5,000 more rounds of lethal ammunition in seven areas of Dhaka.",
         "14": "In the first six days of the crackdown (from July 16 to 21), police and affiliated forces in the DMP area fired at least 34,412 live rounds across 22 protest sites."
     },
     thanaNames: {
@@ -378,8 +378,8 @@ export const bn = {
       "10": "এদিন টি৫৬ (T56) অ্যাসল্ট রাইফেলের ব্যবহারও ব্যাপক হারে বেড়ে যায়। জাতিসংঘের প্রতিবেদন অনুযায়ী, অভ্যুত্থানে সর্বোচ্চ মানুষ মারা গেছে এই অস্ত্রের গুলিতেই।",
       "11": "নাম প্রকাশ না করার শর্তে একজন এসআই দ্য ডেইলি স্টারকে বলেন, ‘এটাই সবচেয়ে লিথাল অস্ত্র। এটা দিয়ে ৩০০ মিটার দূর থেকে টার্গেট করতে পারবেন আপনি।'",
       "12": "অস্ত্র বিশেষজ্ঞরা বলছেন, টাইপ ৫৬ রাইফেল যুদ্ধক্ষেত্রে ব্যবহারের জন্য তৈরি, যা অনেক বুলেটপ্রুফ ভেস্টকেও ভেদ করতে সক্ষম। আইনশৃঙ্খলা নিয়ন্ত্রণে কখনোই এই অস্ত্র ব্যবহার করা হয় না।",
-      "13": "কারফিউয়ের প্রথম দিনে ঢাকার পাঁচ এলাকায় আরও প্রায় ৫ হাজার রাউন্ড প্রাণঘাতী গুলি ছোড়ে পুলিশ।",
-      "14": "ফাইনাল স্ক্রল: জুলাই ১৬ থেকে ২১ পর্যন্ত, রক্তক্ষয়ী আন্দোলনের প্রথম ছয় দিনে ঢাকার ২২টি হটস্পটে পুলিশ ও সহযোগ সংস্থাগুলো অন্তত ৩৪ হাজার ৪১২ রাউন্ড প্রাণঘাতী বুলেট ছুঁড়েছে।"
+      "13": "কারফিউয়ের প্রথম দিনে ঢাকার সাত এলাকায় আরও প্রায় ৫ হাজার রাউন্ড প্রাণঘাতী গুলি ছোড়ে পুলিশ।",
+      "14": "জুলাই ১৬ থেকে ২১ পর্যন্ত, রক্তক্ষয়ী আন্দোলনের প্রথম ছয় দিনে ঢাকার ২২টি হটস্পটে পুলিশ ও সহযোগ সংস্থাগুলো অন্তত ৩৪ হাজার ৪১২ রাউন্ড প্রাণঘাতী বুলেট ছুঁড়েছে।"
     },
     thanaNames: {
         "Badda": "বাড্ডা", "Dhanmondi": "ধানমন্ডি", "Kalabagan": "কলাবাগান", "Kodomtoli": "কদমতলী", "Motijheel": "মতিঝিল", "Jatrabari": "যাত্রাবাড়ী", 

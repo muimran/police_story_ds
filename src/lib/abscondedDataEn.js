@@ -15,7 +15,7 @@ export const abscondedData = [
   { id: 12, officers: 'Md. Tauhidul Islam, BPM-Bar', rank: 'Additional Deputy Police Commissioner', date: '09/10/2024', note: '' },
   { id: 13, officers: 'Rajib Das, PPM-Seba', rank: 'Additional Deputy Police Commissioner', date: '10/10/2024', note: 'On leave and then absconded' },
   { id: 14, officers: 'Golam Ruhani', rank: 'Assistant Police Commissioner', date: '08/11/2024', note: '' },
-  { id: 15, officers: 'Rashedul Islam', rank: 'Additional Deputy Police Commissioner', date: '02/09/2025', note: '' },
+  { id: 15, officers: 'Md Rashedul Islam', rank: 'Additional Deputy Police Commissioner', date: '02/09/2025', note: '' },
   { id: 16, officers: 'Md. Rahmat Ullah Chowdhury, BPM (Bar)', rank: 'Additional Deputy Police Commissioner', date: '02/10/2025', note: '' },
   { id: 17, officers: 'Hasanuzzaman Molla', rank: 'Additional Deputy Police Commissioner', date: '02/12/2025', note: '' },
   { id: 18, officers: 'Shah Md. Akhtarul Islam', rank: 'Additional Deputy Police Commissioner', date: '1/26/2025', note: '' },
