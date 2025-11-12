@@ -1,12 +1,12 @@
 // src/lib/translations.js
 
-// 1. Import ALL data files, including the new ones for the Absconded component
+// 1. Import ALL data files
 import { commandResponsibilityData as enOfficerData } from './enCommandResponsibility.js';
 import { commandResponsibilityData as bnOfficerData } from './BnCommandResponsibility.js';
 import { abscondedData as enAbscondedData } from './abscondedDataEn.js';
 import { abscondedData as bnAbscondedData } from './abscondedDataBn.js';
 
-// 2. Helper function to convert English numerals in a string to Bengali
+// 2. Helper functions
 const toBengaliNumerals = (engStr) => {
   if (typeof engStr !== 'string' && typeof engStr !== 'number') return engStr;
   const str = String(engStr);
@@ -14,10 +14,8 @@ const toBengaliNumerals = (engStr) => {
   return str.replace(/[0-9]/g, (digit) => bengaliDigits[digit]);
 };
 
-// A helper function to create blockquote objects
 const createQuote = (text, cite) => ({ type: 'blockquote', text, cite });
 
-// --- NEW: Bengali Date Formatting Data and Function ---
 const bnMonths = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"];
 const bnWeekdays = ["রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"];
 
@@ -88,7 +86,7 @@ export const en = {
     { type: 'p', content: "Promotions have not been limited to junior commanders only. At least four officers with potential command responsibility during the uprising have also been elevated." },
     { type: 'p', content: "Among them is Sattaki Kabiraj Jhulan, former ADC of Public Order Management (POM), a riot-control reserve force under DMP." },
     { type: 'p', content: "He was present in Mirpur 13 on July 19 during a face-off between protesters and law enforcers. The related FIR shows his unit fired 141 live rounds, 104 from Type 56 assault rifles. Not a single non-lethal round was fired there." },
-    { type: 'component', name: 'OfficerTable' },
+    { type: 'component', name: 'OfficerTable' }, 
     { type: 'component', name: 'AudioSection' },
     { type: 'h2', content: "The great desertion" },
     { type: 'p', content: "At least 10 former DMP officials, including Commissioner Habibur Rahman and Detective Branch chief Harun Or Rashid, absconded from their posts on August 6, the day after Hasina fled to India." },
@@ -134,6 +132,7 @@ export const en = {
     captions: [ "In most FIRs, officers present at the scene were mentioned in this way.", "In some cases, officers were directly named as the ones who ‘ordered’ the shooting." ],
     alt_texts: [ "FIR document showing officers mentioned by rank", "FIR document showing a specific officer named as giving an order" ]
   },
+
   methodologySection: {
     title: "Methodology",
     content: [
@@ -144,10 +143,25 @@ export const en = {
       "We then compared the DMP roster during the uprising to the list of officials posted as of late July 2024. This revealed that only 45 officers remained in their original posts—meaning 320 had either been transferred, retired, or fled.",
       "We also compiled all transfer notices issued since August 2024 from official government websites, producing a final dataset containing transfer records for 236 DMP officers.",
       "For analytical clarity, officers in our charts are divided into two groups:",
-      "Top rank officers: Police Commissioner, Additional Police Commissioner, Joint Police Commissioner, Deputy Police Commissioner.",
-      "Other: Additional Deputy Police Commissioner, Assistant Police Commissioner.",
-    ]
+      "<strong>Top rank officers:</strong> Police Commissioner, Additional Police Commissioner, Joint Police Commissioner, Deputy Police Commissioner.",
+      "<strong>Other:</strong> Additional Deputy Police Commissioner, Assistant Police Commissioner.",
+      "To simplify the data for visualisation, we grouped the 21 transfer destinations into five categories. The complete mapping is detailed below:",
+    ],
+    table: {
+      headers: ["Training & Development", "Specialized Operational Units", "Geographic Field Commands", "Central & Regional Administration", "Investigation & Intelligence"],
+      rows: [
+        ["Bangladesh Police Academy", "Anti-Terrorism Unit", "Circle", "Police Headquarters", "CID"],
+        ["In service training centre", "Armed Police Battelion (APBn)", "District Police", "Range Office", "PBI"],
+        ["Police Staff Collage", "Highway Police", "Metropolitons", "", "SB"],
+        ["Police Special Training School", "Industrial police", "", "", ""],
+        ["Police Training Center", "Navy Police", "", "", ""],
+        ["", "RAB", "", "", ""],
+        ["", "Railway Police", "", "", ""],
+        ["", "Tourist Police", "", "", ""]
+      ]
+    }
   },
+
   credits: {
     line: "<strong>Additional reporting:</strong> Emrul Hasan Bappi. <strong>Research:</strong> Sharmin Sikder, Mashfiq Mizan, Aunik Arnold Dhali, Subrata Roy, Samsul Arefin Khan, Khalid Hossain, Nabid Yeasin, Badshah Mollah, Tangila Tasnim, Usraat Fahmidah, and Rahee Nayab"
   },
@@ -155,7 +169,7 @@ export const en = {
   headline: {
     line1: "July Uprising", line2: "Commanders of crackdown", line3: "Police leadership during July uprising uncovered",
     datePublished: "Published:", dateUpdated: "Updated:",
-    creditReporting: "Reporting:", creditDataViz: "Data Visualisation and Map:", creditGraphics: "Graphics:", creditEditing: "Editing:",
+    creditReporting: "Reporting:", creditDataViz: "Data, Visualisation and Web Development:", creditGraphics: "Graphics:", creditEditing: "Editing:",
     nameReporting: "Keero Adhnan Ahmed", nameDataViz: "Muhammad Imran", nameGraphics: "Anwar Sohel", nameEditing: "Martin Swapan Pandey",
   },
   
@@ -181,9 +195,15 @@ export const en = {
     },
     uiText: {
         thanaHeader: "Thana", totalLabel: "Total",
+        seeDetail: "See Detail",
         ammoLabels: { t56: 'Type 56', lethal: 'Lethal', rubber_cartridge: 'R. Cartridge', shotgun_shell: 'Shotgun Shell', tear_gas_grenade: 'Tear Gas', baton_rounds: 'Baton Rounds', non_lethal: 'Non-Lethal' },
         monthNames: [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ]
-    }
+    },
+        finalNote: [
+        "*The ammunition counts presented here are a partial estimate. This data is based on available FIRs, but some documents were illegible or could not be collected.",
+        '*FIRs from some stations, such as Mirpur Model and Uttara East, did not specify ammunition quantities, instead used vague phrases like "a huge amount of ammunitions."',
+        "*Actions documented by Shahbagh, Banani, and Shahjahanpur police were located to the Dhaka University area, Mohakhali, and Malibagh, respectively."
+    ]
   },
 
   transfers: {
@@ -205,7 +225,31 @@ export const en = {
   audioSection: {
     heading: "New Section",
     text: "Placeholder text...",
-    embedCode: `<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=REPLACE_WITH_YOUR_SOUNDCLOUD_URL"></iframe>`
+    accordionTitle: "Placeholder Name",
+    items: [
+      {
+        headline: "Placeholder Headline One",
+        text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non."
+      },
+      {
+        headline: "Placeholder Headline Two",
+        text: "Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et.",
+        iframeSrc: "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/12345678"
+      },
+      {
+        headline: "Placeholder Headline Three",
+        text: "Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar facilisis. Ut felis. Praesent dapibus, neque id cursus faucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, tincidunt."
+      },
+      {
+        headline: "Placeholder Headline Four",
+        text: "Nulla facilisi. Integer lacinia sollicitudin massa. Cras metus. Sed aliquet risus a tortor. Integer id quam. Morbi mi. Quisque nisl felis, venenatis tristique, dignissim in, ultrices sit amet, augue. Proin sodales libero eget ante. Nulla quam. Aenean laoreet. Vestibulum nisi lectus, commodo ac, facilisis ac.",
+        iframeSrc: "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/87654321"
+      },
+      {
+        headline: "Placeholder Headline Five",
+        text: "Curabitur sit amet mauris. Morbi in dui quis est pulvinar ullamcorper. Nulla et lacus et lectus vestibulum nonummy. In hac habitasse platea dictumst. Curabitur at lacus ac velit ornare lobortis. Curabitur a felis in nunc fringilla tristique. Morbi mattis ullamcorper velit. Phasellus gravida semper nisi. Nullam vel."
+      }
+    ]
   },
 
   officerTable: {
@@ -266,7 +310,7 @@ export const bn = {
     { type: 'p', content: "মিরপুর, যাত্রাবাড়ী, উত্তরা এবং মোহাম্মদপুরের মতো যেসব এলাকায় সবচেয়ে বেশি হতাহতের ঘটনা ঘটেছে, সেখানে আনসার, র‍্যাবের মতো অন্যান্য বাহিনীর সঙ্গে মিলে প্রাণঘাতী অস্ত্র ব্যবহার করতে দেখা গেছে।" },
     { type: 'p', content: "গত তিন মাসে শত শত পৃষ্ঠার দাপ্তরিক নথি পর্যালোচনা করে দ্য ডেইলি স্টার ৩৯ জন পুলিশ কর্মকর্তাকে শনাক্ত করেছে, যাঁদের অধীনস্থ ইউনিটগুলো আন্দোলনকারীদের ওপর গুলি চালিয়ে। কিছু ক্ষেত্রে, এই কর্মকর্তারা ঘটনাস্থলে উপস্থিত থেকে সরাসরি গুলি চালানোর নির্দেশও দিয়েছেন।" },
     { type: 'p', content: "এই ৩৯ কর্মকর্তার মধ্যে ১৩ জন পলাতক, ২৬ জনকে দেশের বিভিন্ন স্থানে বদলি করা হয়েছে এবং মাত্র দুজন গ্রেপ্তার হয়েছেন।" },
-    { type: 'h2', content: "আন্দোলন দমনে মরণাস্ত্র" },
+    { type: 'h2', content: "আন্দোলন দমনে মরণাস্ত্র" }, 
     { type: 'p', content: "আদালতের রায়ে সরকারি চাকরিতে কোটা ব্যবস্থা পুনর্ব্যবহার হওয়ার পর শিক্ষার্থীরা গতবছরের ৬ জুন প্রথম কোটা সংস্কারের দাবিতে রাস্তায় নামে। আন্দোলন শুরুর প্রথম এক মাসে আইনশৃঙ্খলা বাহিনী এতে হস্তক্ষেপ করেনি।" },
     { type: 'p', content: "পরিস্থিতি পাল্টায় ১৪ জুলাই প্রধানমন্ত্রীর ‘রাজাকারের বাচ্চা’রা বক্তব্যের পর। এর পরই সারা দেশে সড়ক ও রেললাইন অবরোধ করতে শুরু করে আন্দোলনকারীরা।" },
     { type: 'component', name: 'PoliceMap' },
@@ -328,6 +372,7 @@ export const bn = {
     captions: [ "বেশিরভাগ এফআইআর-এ ঘটনাস্থলে উপস্থিত কর্মকর্তাদের এইভাবে উল্লেখ করা হয়েছে।", "কিছু ক্ষেত্রে, কর্মকর্তাদের সরাসরি গুলি করার 'আদেশ' দাতা হিসেবে নাম উল্লেখ করা হয়েছে।" ],
     alt_texts: [ "এফআইআর ডকুমেন্ট যেখানে কর্মকর্তাদের পদমর্যাদা অনুসারে উল্লেখ করা হয়েছে", "এফআইআর ডকুমেন্ট যেখানে একজন নির্দিষ্ট কর্মকর্তাকে গুলি করার আদেশদাতা হিসেবে নাম দেওয়া হয়েছে" ]
   },
+
   methodologySection: {
     title: "যেভাবে দ্য ডেইলি স্টার অনুসন্ধানটি করেছে",
     content: [
@@ -347,10 +392,25 @@ export const bn = {
       "এর মানে হলো, বাকি ৩২০ জন হয় বদলি হয়েছেন, অবসরে গেছেন, অথবা পালিয়েছেন।",
       "আমরা সরকারি ওয়েবসাইট থেকে আগস্ট ২০২৪-এর পর জারি হওয়া সব বদলির প্রজ্ঞাপনও সংগ্রহ করি, যার মাধ্যমে ডিএমপির ২৩৬ জন কর্মকর্তার বদলির তথ্য পাওয়া যায়।",
       "বিশ্লেষণের সুবিধার জন্য আমাদের চার্টগুলোতে কর্মকর্তাদের দুটি ভাগে ভাগ করা হয়েছে:",
-      "শীর্ষ পদমর্যাদার কর্মকর্তা: পুলিশ কমিশনার, অতিরিক্ত পুলিশ কমিশনার, যুগ্ম পুলিশ কমিশনার, উপকমিশনার।",
-      "অন্যান্য: অতিরিক্ত উপকমিশনার, সহকারী কমিশনার।"
-    ]
+      "<strong>শীর্ষ পদমর্যাদার কর্মকর্তা:</strong> পুলিশ কমিশনার, অতিরিক্ত পুলিশ কমিশনার, যুগ্ম পুলিশ কমিশনার, উপকমিশনার।",
+      "<strong>অন্যান্য:</strong> অতিরিক্ত উপকমিশনার, সহকারী কমিশনার।",
+      "ডেটা ভিজ্যুয়ালাইজেশনের সুবিধার জন্য, আমরা কর্মকর্তাদের বদলির ২১টি ভিন্ন ভিন্ন কর্মস্থলকে পাঁচটি প্রধান ভাগে ভাগ করেছি। সম্পূর্ণ শ্রেণিবিন্যাসটি নিচে বিস্তারিত দেওয়া হলো:",
+    ],
+    table: {
+      headers: ["প্রশিক্ষণ কেন্দ্র", "বিশেষায়িত অপারেশনাল ইউনিট", "ভৌগোলিক ফিল্ড কমান্ড", "কেন্দ্রীয় ও আঞ্চলিক প্রশাসন", "তদন্ত ও গোয়েন্দা সংস্থা"],
+      rows: [
+        ["বাংলাদেশ পুলিশ একাডেমি", "অ্যান্টি-টেরোরিজম ইউনিট", "সার্কেল", "পুলিশ হেডকোয়ার্টার্স", "সিআইডি"],
+        ["ইন-সার্ভিস ট্রেনিং সেন্টার", "আর্মড পুলিশ ব্যাটালিয়ন (এপিবিএন)", "জেলা পুলিশ", "রেঞ্জ অফিস", ""],
+        ["পুলিশ স্টাফ কলেজ", "হাইওয়ে পুলিশ", "মেট্রোপলিটন", "", "পিবিআই"],
+        ["পুলিশ স্পেশাল ট্রেনিং স্কুল", "ইন্ডাস্ট্রিয়াল পুলিশ", "", "", ""],
+        ["পুলিশ ট্রেনিং সেন্টার", "নৌ পুলিশ", "", "", ""],
+        ["", "র‍্যাব", "", "", ""],
+        ["", "রেলওয়ে পুলিশ", "", "", ""],
+        ["", "ট্যুরিস্ট পুলিশ", "", "", ""]
+      ]
+    }
   },
+
   credits: {
     line: "<strong>অতিরিক্ত রিপোর্টিং:</strong> ইমরুল হাসান বাপ্পি, দীপংকর রায়, সুশান্ত ঘোষ ও সোহানুর রহমান রাফি। <strong>গবেষণা:</strong> শারমিন সিকদার, মাশফিক মিজান, অনিক আর্নল্ড ঢালী, সুব্রত রায়, সামসুল আরেফিন খান, খালিদ হোসাইন, নবিদ ইয়াসিন, বাদশা মোল্লা, তানজিলা তাসনিম, উসরাত ফাহমিদাহ ও রাহি নায়েব।"
   },
@@ -358,9 +418,8 @@ export const bn = {
   headline: {
     line1: "জুলাই অভ্যুত্থান", line2: "গুলির নির্দেশদাতা", line3: "কর্মকর্তারা কে কোথায়?",
     datePublished: "প্রকাশিত:", dateUpdated: "আপডেট:",
-    creditReporting: "রিপোর্টিং:", creditDataViz: "ডেটা ভিজ্যুয়ালাইজেশন ও ম্যাপ:", creditGraphics: "গ্রাফিক্স:", creditEditing: "সম্পাদনা:",
+    creditReporting: "রিপোর্টিং:", creditDataViz: "ডেটা, ভিজ্যুয়ালাইজেশন ও ওয়েব ডেভেলপমেন্ট:", creditGraphics: "গ্রাফিক্স:", creditEditing: "সম্পাদনা:",
     nameReporting: "কিরো আদনান আহমেদ", nameDataViz: "মুহাম্মদ ইমরান", nameGraphics: "আনোয়ার সোহেল", nameEditing: "মার্টিন স্বপন পান্ডে",
-    // --- THIS IS THE KEY CHANGE ---
     formatDate: formatBengaliDate
   },
 
@@ -373,13 +432,13 @@ export const bn = {
       "5": "ঢাকার অন্তত ১৩টি এলাকায় মরণাস্ত্র ব্যবহার করে পুলিশ। পুলিশের এজাহার অনুযায়ী, সেদিন ঢাকা মহানগরে ১০ হাজারের বেশি প্রাণঘাতী বুলেট ছোড়া হয়, যার প্রায় অর্ধেকই ছিল যাত্রাবাড়ীতে।",
       "6": "শাহবাগ, মোহাম্মদপুর ও উত্তরা পশ্চিম থানায় কর্মরত তিনজন উপপরিদর্শক (এসআই) নাম প্রকাশ না করার শর্তে জানান, সেদিন শটগানের জন্য রাবারের বদলে বেশি করে সিসা কার্তুজ নেওয়ার নির্দেশ দেওয়া হয়েছিল তাদের।",
       "7": "একইদিনে তৎকালীন প্রধানমন্ত্রী শেখ হাসিনা ‘লিথাল' অস্ত্র অস্ত্র ব্যবহারের অনুমোদন দেন। দ্য ডেইলি স্টারের যাচাই করা <a href=\"https://soundcloud.com/thedailystar/hasinas-deadly-order-during-july-uprising-1\" target=\"_blank\" rel=\"noopener noreferrer\">একটি ফোনালাপে</a> তাকে বলতে শোনা যায়, আন্দোলনকারীদের ‘যেখানেই পাবে, গুলি করবে'। সারাদেশে প্রায় ১০০ আন্দোলনকারী নিহত হয় সেদিন।",
-      "8": "শুক্রবার ছিল জুলাই মাসের সবচেয়ে রক্তক্ষয়ী দিন। সারাদেশে নিহতের সংখ্যা দাঁড়ায় প্রায় ৩০০। রাজধানীতে সেদিন রাবার বুলেটের চেয়ে তিনগুণেরও বেশি প্রাণঘাতী বুলেট ব্যবহার করা হয়।",
+      "8": "শুক্রবার ছিল জুলাই মাসের সবচেয়ে রক্তক্ষয়ী দিন। সারাদেশে নিহতের সংখ্যা দাঁড়ায় প্রায় ৩০০। রাজধানীতে সেদিন রাবার বুলেটের চেয়ে তিনগুণেরও বেশি প্রাণঘাতী বুলেট ব্যবহার করা হয়।",
       "9": "উত্তরা ১২ নম্বর সেক্টর, গুলশান, মহাখালী ও যাত্রাবাড়ীতে মোট গোলাবারুদের ৮০ শতাংশেরও বেশি ছিল প্রাণঘাতী গুলি।",
       "10": "এদিন টি৫৬ (T56) অ্যাসল্ট রাইফেলের ব্যবহারও ব্যাপক হারে বেড়ে যায়। জাতিসংঘের প্রতিবেদন অনুযায়ী, অভ্যুত্থানে সর্বোচ্চ মানুষ মারা গেছে এই অস্ত্রের গুলিতেই।",
       "11": "নাম প্রকাশ না করার শর্তে একজন এসআই দ্য ডেইলি স্টারকে বলেন, ‘এটাই সবচেয়ে লিথাল অস্ত্র। এটা দিয়ে ৩০০ মিটার দূর থেকে টার্গেট করতে পারবেন আপনি।'",
       "12": "অস্ত্র বিশেষজ্ঞরা বলছেন, টাইপ ৫৬ রাইফেল যুদ্ধক্ষেত্রে ব্যবহারের জন্য তৈরি, যা অনেক বুলেটপ্রুফ ভেস্টকেও ভেদ করতে সক্ষম। আইনশৃঙ্খলা নিয়ন্ত্রণে কখনোই এই অস্ত্র ব্যবহার করা হয় না।",
       "13": "কারফিউয়ের প্রথম দিনে ঢাকার সাত এলাকায় আরও প্রায় ৫ হাজার রাউন্ড প্রাণঘাতী গুলি ছোড়ে পুলিশ।",
-      "14": "জুলাই ১৬ থেকে ২১ পর্যন্ত, রক্তক্ষয়ী আন্দোলনের প্রথম ছয় দিনে ঢাকার ২২টি হটস্পটে পুলিশ ও সহযোগ সংস্থাগুলো অন্তত ৩৪ হাজার ৪১২ রাউন্ড প্রাণঘাতী বুলেট ছুঁড়েছে।"
+      "14": "জুলাই ১৬ থেকে ২১ পর্যন্ত, রক্তক্ষয়ী আন্দোলনের প্রথম ছয় দিনে ঢাকার ২২টি হটস্পটে পুলিশ ও সহযোগ সংস্থাগুলো অন্তত ৩৪ হাজার ৪১২ রাউন্ড প্রাণঘাতী বুলেট ছুঁড়েছে।"
     },
     thanaNames: {
         "Badda": "বাড্ডা", "Dhanmondi": "ধানমন্ডি", "Kalabagan": "কলাবাগান", "Kodomtoli": "কদমতলী", "Motijheel": "মতিঝিল", "Jatrabari": "যাত্রাবাড়ী", 
@@ -389,31 +448,61 @@ export const bn = {
       },
     uiText: {
         thanaHeader: "থানা", totalLabel: "মোট",
+        seeDetail: "বিস্তারিত দেখুন",
         ammoLabels: { t56: 'টাইপ ৫৬', lethal: 'প্রাণঘাতী', rubber_cartridge: 'রাবার কার্তুজ', shotgun_shell: 'শটগান শেল', tear_gas_grenade: 'টিয়ার গ্যাস', baton_rounds: 'ব্যাটন রাউন্ড', non_lethal: 'অ-প্রাণঘাতী' },
         monthNames: [ "জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর" ]
-    }
+    },
+        finalNote: [
+        "*এখানে উপস্থাপিত গোলাবারুদের গণনা একটি আংশিক হিসাব। এই তথ্য প্রাপ্তিসাধ্য FIR-এর উপর ভিত্তি করে তৈরি, কিন্তু কিছু নথি পাঠযোগ্য ছিল না বা সংগ্রহ করা সম্ভব হয়নি।",
+        "*কিছু থানার FIR-এ, যেমন মিরপুর মডেল ও উত্তরা পূর্ব, গোলাবারুদের পরিমাণ উল্লেখ না করে অস্পষ্টভাবে ‘বিপুল পরিমাণ গোলাবারুদ’ লেখা হয়েছে।",
+        "*শাহবাগ, বনানী, এবং শাহজাহানপুর থানার নথিভুক্ত অভিযানগুলো যথাক্রমে ঢাকা বিশ্ববিদ্যালয় এলাকা, মহাখালী এবং মালিবাগে অবস্থিত ছিল।"
+    ]
   },
   
   transfers: {
     scrollySteps: [
-      { title: 'ডিএমপির মোট কর্মকর্তাবৃন্দ', description: 'অভ্যুত্থানকালে ঢাকা মহানগরে এসি ও উপরের র‍্যাংকের মোট <span style="background-color: #9ca3af; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">৩৬৫ জন</span> পুলিশ কর্মকর্তা ছিলেন। প্রতিটি ডট একজন পুলিশ কর্মকর্তাকে প্রতিনিধিত্ব করে।' },
-      { title: '৮৮% সরানো হয়েছে', description: 'এক বছর পর, তাদের মধ্যে মাত্র ৪৫ জন এখনো ডিএমপিতে আছেন।<span style="background-color: #663399; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">বাকি ৩২০ জন</span> হয় বদলি হয়েছেন, অবসর নিয়েছেন বা পালিয়েছেন। ডেইলি স্টার ২৩৬ জন সিনিয়র কর্মকর্তার বদলির তথ্য পেয়েছে।' },
-      { title: 'কমান্ডে বিভাজন', description: 'বদলি হওয়া কর্মকর্তাদের মধ্যে ৬৪ জন <span style="background-color: #fdba74; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">ডিসি বা উপরের র‍্যাংকের।</span> বাকি ১৭২ জন <span style="background-color: #4E79A7; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">এডিসি বা এসি র‍্যাংকধারী।</span>' },
-      { title: 'বদলির গন্তব্য', description: 'ডিএমপি কর্মকর্তাদের মোট ২১টি ভিন্ন ভিন্ন দপ্তরে বদলি করা হয়েছে। সিনিয়র কর্মকর্তাদের ৪৫ শতাংশই বদলি হয়েছেন রেঞ্জ ডিআইজির কার্যালয়ে (কেন্দ্রীয় ও আঞ্চলিক প্রশাসন)। তবে সবচেয়ে বেশি। তবে সামগ্রিকভাবে সবচেয়ে বেশি কর্মকর্তা বদলি হয়েছেন র‍্যাব ও এপিবিএনের মতো বিশেষায়িত অপারেশনাল ইউনিটগুলোতে।' },
-      { title: 'সংযুক্ত কর্মকর্তা', description: 'বদলি হওয়া কর্মকর্তাদের মধ্যে ১৪ শতাংশকে ‘সংযুক্ত’ করা হয়েছে। পুলিশের পরিভাষায় যখন কোনো কর্মকর্তাকে সংযুক্ত করা হয়, তখন তার নির্দিষ্ট দায়িত্ব থাকে না। অর্থাৎ, আনুষ্ঠানিকভাবে বরখাস্ত না করে সেই কর্মকর্তাকে সংযুক্ত করা হয়।' },
-      { title: 'চূড়ান্ত চিত্র', description: 'ডিসি ও এর উপরের পদমর্যাদার কর্মকর্তাদের অর্ধেককেই বিভিন্ন জায়গায় সংযুক্ত করে রাখা হয়েছে। এবং ডিসির নিচে র‍্যাংকধারী একজন কর্মকর্তাকেও সংযুক্ত করা হয়নি।' }
+      { title: 'জুলাইয়ের ডিএমপি', description: 'অভ্যুত্থানকালে ঢাকা মহানগরে এসি ও উপরের র‍্যাংকের মোট <span style="background-color: #9ca3af; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">৩৬৫ জন</span> পুলিশ কর্মকর্তা ছিলেন। প্রতিটি ডট একজন পুলিশ কর্মকর্তাকে প্রতিনিধিত্ব করে।' },
+      { title: '৮৮ শতাংশ ইতোমধ্যে ডিএমপি ছেড়েছেন', description: 'এক বছর পর, তাদের মধ্যে মাত্র ৪৫ জন এখনো ডিএমপিতে আছেন।<span style="background-color: #663399; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">বাকি ৩২০ জন</span> হয় বদলি হয়েছেন, অবসর নিয়েছেন বা পালিয়েছেন। ডেইলি স্টার ২৩৬ জন সিনিয়র কর্মকর্তার বদলির তথ্য পেয়েছে।' },
+      { title: 'জেষ্ঠ্যতার ক্রমানুসারে কর্মকর্তাদের দুই ভাগ', description: 'বদলি হওয়া কর্মকর্তাদের মধ্যে ৬৪ জন <span style="background-color: #fdba74; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">ডিসি বা উপরের র‍্যাংকের।</span> বাকি ১৭২ জন <span style="background-color: #4E79A7; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600;">এডিসি বা এসি র‍্যাংকধারী।</span>' },
+      { title: 'বদলির ধরন', description: 'ডিএমপি কর্মকর্তাদের মোট ২১টি ভিন্ন ভিন্ন দপ্তরে বদলি করা হয়েছে। সিনিয়র কর্মকর্তাদের ৪৫ শতাংশই বদলি হয়েছেন রেঞ্জ ডিআইজির কার্যালয়ে (কেন্দ্রীয় ও আঞ্চলিক প্রশাসন)। তবে সামগ্রিকভাবে সবচেয়ে বেশি কর্মকর্তা বদলি হয়েছেন র‍্যাব ও এপিবিএনের মতো বিশেষায়িত অপারেশনাল ইউনিটগুলোতে।' },
+      { title: 'সংযুক্ত', description: 'বদলি হওয়া কর্মকর্তাদের মধ্যে ১৪ শতাংশকে ‘সংযুক্ত’ করা হয়েছে। পুলিশের পরিভাষায় যখন কোনো কর্মকর্তাকে সংযুক্ত করা হয়, তখন তার নির্দিষ্ট দায়িত্ব থাকে না। অর্থাৎ, আনুষ্ঠানিকভাবে বরখাস্ত না করে সেই কর্মকর্তাকে সংযুক্ত করা হয়।' },
+      { title: 'সংযুক্ত সবাই সিনিয়র', description: 'ডিসি ও এর উপরের পদমর্যাদার কর্মকর্তাদের অর্ধেককেই বিভিন্ন জায়গায় সংযুক্ত করে রাখা হয়েছে। এবং ডিসির নিচে র‍্যাংকধারী একজন কর্মকর্তাকেও সংযুক্ত করা হয়নি।' }
     ],
     tooltipLabels: { id: "আইডি", rank: "পদমর্যাদা", rank_level: "পদের স্তর", destination_cluster: "বদলি ক্লাস্টার", attached: "সংযুক্ত", yes: "হ্যাঁ", no: "না", not_applicable: "প্রযোজ্য নয়" },
     clusterLabels: {
       high_rank: "উচ্চ পদমর্যাদা", low_rank: "নিম্ন পদমর্যাদা", attached: "সংযুক্ত", others: "অন্যান্য",
-      'Specialized Operational Units': 'বিশেষায়িত অপারেশনাল ইউনিট', 'Training & Development': 'প্রশিক্ষণ ও উন্নয়ন', 'Central & Regional Administration': 'কেন্দ্রীয় ও আঞ্চলিক প্রশাসন', 'Investigation & Intelligence': 'তদন্ত ও গোয়েন্দা', 'Geographic Field Commands': 'ভৌগোলিক ফিল্ড কমান্ড'
+      'Specialized Operational Units': 'বিশেষায়িত অপারেশনাল ইউনিট', 'Training & Development': 'প্রশিক্ষণ কেন্দ্র', 'Central & Regional Administration': 'কেন্দ্রীয় ও আঞ্চলিক প্রশাসন', 'Investigation & Intelligence': 'তদন্ত ও গোয়েন্দা সংস্থা', 'Geographic Field Commands': 'ভৌগোলিক ফিল্ড কমান্ড'
     }
   },
 
   audioSection: {
     heading: "নতুন সেকশন",
     text: "প্লেস হোল্ডার টেক্সট......",
-    embedCode: `<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=REPLACE_WITH_YOUR_SOUNDCLOUD_URL"></iframe>`
+    accordionTitle: "প্লেসহোল্ডার নাম",
+    items: [
+      {
+        headline: "প্লেসহোল্ডার শিরোনাম এক",
+        text: "এখানে প্রথম অনুচ্ছেদের জন্য কিছু বাংলা ডেমো টেক্সট থাকবে যা প্রায় পঞ্চাশ শব্দের মত দীর্ঘ। এটি শুধুমাত্র একটি উদাহরণ হিসেবে ব্যবহৃত হচ্ছে। বিষয়বস্তু পরিবর্তন করা প্রয়োজন হতে পারে। এই লেখাটি লেআউটের একটি ধারণা দেওয়ার জন্য তৈরি করা হয়েছে এবং এর কোনো প্রকৃত অর্থ নেই। ধন্যবাদ।"
+      },
+      {
+        headline: "প্লেসহোল্ডার শিরোনাম দুই",
+        text: "দ্বিতীয় অনুচ্ছেদের জন্য আরও কিছু বাংলা ডেমো টেক্সট এখানে দেওয়া হলো। এটিও প্রায় পঞ্চাশ শব্দের। এই পাঠ্যটি ডিজাইনের একটি অংশ হিসেবে কাজ করবে এবং চূড়ান্ত বিষয়বস্তু দ্বারা প্রতিস্থাপিত হবে। লেআউটের সামঞ্জস্যতা পরীক্ষার জন্য এটি একটি গুরুত্বপূর্ণ অংশ।",
+        iframeSrc: "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/12345678"
+      },
+      {
+        headline: "প্লেসহোল্ডার শিরোনাম তিন",
+        text: "তৃতীয় অনুচ্ছেদের এই ডেমো টেক্সটটি একটি ভিন্ন ফন্টের প্রয়োজন অনুযায়ী তৈরি করা হয়েছে। এই পাঠ্যের উদ্দেশ্য হল বিভিন্ন ফন্ট এবং শৈলী ব্যবহার করে বিষয়বস্তু কেমন দেখায় তা পরীক্ষা করা। এটি একটি ভিজ্যুয়াল গাইড হিসেবে কাজ করবে। চূড়ান্ত বিষয়বস্তু পরে যোগ করা হবে।"
+      },
+      {
+        headline: "প্লেসহোল্ডার শিরোনাম চার",
+        text: "চতুর্থ অনুচ্ছেদের জন্য প্লেসহোল্ডার টেক্সট এখানে যোগ করা হয়েছে। এই অনুচ্ছেদের নীচে একটি আইক্লাউড আইফ্রেম যুক্ত করা হবে। পাঠ্যটি আইফ্রেমের উপরের বিষয়বস্তুর স্থান পূরণ করার জন্য ডিজাইন করা হয়েছে। এটি শুধুমাত্র একটি লেআউট প্রদর্শনের জন্য ব্যবহৃত হচ্ছে।",
+        iframeSrc: "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/87654321"
+      },
+      {
+        headline: "প্লেসহোল্ডার শিরোনাম পাঁচ",
+        text: "শেষ এবং পঞ্চম অনুচ্ছেদের জন্য এই ডেমো টেক্সটটি তৈরি করা হয়েছে। এটি সম্পূর্ণ বিভাগের কাঠামোটি সম্পূর্ণ করতে সহায়তা করবে। এই পাঠ্যটি অন্যগুলোর মতোই পঞ্চাশ শব্দের কাছাকাছি এবং এটি একটি ভিন্ন ফন্টে প্রদর্শিত হবে, যা ব্যবহারকারীর দৃষ্টি আকর্ষণ করতে সাহায্য করবে।"
+      }
+    ]
   },
 
   officerTable: {

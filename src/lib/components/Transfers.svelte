@@ -16,24 +16,24 @@
 	let rankBoundingCircles = [];
 	let activeStep = 0;
 
-	// --- Tooltip State ---
-	let tooltipElement;
-
 	// --- Chart Configuration ---
 	const width = 500;
 	const height = 500;
 	const mobileBreakpoint = 820;
 
 	// --- SEPARATED LOGIC: Visual Configurations ---
+	
+	// --- CHANGE HERE: Adjusted vertical spacing to be less squished ---
 	const DESKTOP_CONFIG = {
-		dotRadius: 6,
+		dotRadius: 5, // This size was good.
 		labelXPosition: width * 0.65,
 		clusterPositions: {
-			'Specialized Operational Units':     { x: 160, y: 0 },
-			'Training & Development':            { x: 165, y: 193 },
-			'Central & Regional Administration': { x: 160, y: 340 },
-			'Investigation & Intelligence':      { x: 160, y: 455 },
-			'Geographic Field Commands':         { x: 160, y: 550 }
+			// Y-values are now more spread out than the last attempt.
+			'Specialized Operational Units':     { x: 160, y: 30 },   // Was 50
+			'Training & Development':            { x: 165, y: 195 },  // Was 150
+			'Central & Regional Administration': { x: 160, y: 320 },  // Was 250
+			'Investigation & Intelligence':      { x: 160, y: 420 },  // Was 350
+			'Geographic Field Commands':         { x: 160, y: 500 }   // Was 450
 		}
 	};
 
@@ -93,27 +93,6 @@
 			case 'unknown': return '#9ca3af';
 			default: return '#ccc';
 		}
-	};
-
-	// --- Tooltip Functions ---
-	const showTooltip = (event, d) => {
-		if (!tooltipElement) return;
-		tooltipElement.style.visibility = 'visible';
-		tooltipElement.style.left = `${event.clientX + 10}px`;
-		tooltipElement.style.top = `${event.clientY + 10}px`;
-        const NA = t.tooltipLabels.not_applicable;
-		tooltipElement.innerHTML = `
-			<div>${t.tooltipLabels.id}: ${d.id || NA}</div>
-			<div>${t.tooltipLabels.rank}: ${d.rank || NA}</div>
-			<div>${t.tooltipLabels.rank_level}: ${d.rank_level || NA}</div>
-			<div>${t.tooltipLabels.destination_cluster}: ${d.destination_cluster || NA}</div>
-			<div>${t.tooltipLabels.attached}: ${d.attachment === 1 ? t.tooltipLabels.yes : t.tooltipLabels.no}</div>
-		`;
-	};
-
-	const hideTooltip = () => {
-		if (!tooltipElement) return;
-		tooltipElement.style.visibility = 'hidden';
 	};
 
 	// --- Simulation Function (now uses activeConfig) ---
@@ -193,10 +172,6 @@
 
 	// --- Component Lifecycle ---
 	onMount(async () => {
-		tooltipElement = document.createElement('div');
-		tooltipElement.className = 'tooltip';
-		document.body.appendChild(tooltipElement);
-		
 		const response = await fetch(`${base}/transfers.csv`);
 		const rawData = csvParse(await response.text());
 		allTransfers = rawData.map(d => ({ ...d, attachment: +d.attachment, faded: false }));
@@ -210,11 +185,13 @@
             if (isMobile) {
                 activeScroller.setup(MOBILE_SCROLLER_CONFIG)
                     .onStepEnter(response => { 
+                        console.log(`Mobile: Entering step ${response.index}`);
                         activeStep = Math.min(response.index, steps.length - 1); 
                     });
             } else {
                 activeScroller.setup(DESKTOP_SCROLLER_CONFIG)
                     .onStepEnter(response => { 
+                        console.log(`Desktop: Entering step ${response.index}`);
                         activeStep = Math.min(response.index, steps.length - 1); 
                     });
             }
@@ -238,9 +215,6 @@
             if (activeScroller) {
                 activeScroller.destroy();
             }
-			if (tooltipElement) {
-				document.body.removeChild(tooltipElement);
-			}
 		};
 	});
 </script>
@@ -329,12 +303,7 @@
 								(activeStep === 3 ? d.y3 :
 								(activeStep === 4 ? d.y4 : d.y5)))
 							}px);"
-							on:mouseover={(e) => showTooltip(e, d)}
-							on:mouseout={hideTooltip}
-							on:focus={(e) => showTooltip(e, d)}
-							on:blur={hideTooltip}
 						>
-							<title>{d.rank || 'N/A'} to {d.destination_cluster || 'N/A'}</title>
 						</circle>
 					{/each}
 				</g>
@@ -395,27 +364,6 @@
 	.dots circle.hidden-dot {
 		opacity: 0;
 		pointer-events: none;
-	}
-
-	/* --- Tooltip --- */
-	.tooltip {
-		position: fixed;
-		visibility: hidden;
-		background: #1f2937;
-		color: #ffffff;
-		padding: 0.75rem;
-		border-radius: 6px;
-		pointer-events: none;
-		z-index: 1000;
-		font-size: 0.875rem;
-		line-height: 1.4;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-	}
-	.tooltip div {
-		margin-bottom: 0.25rem;
-	}
-	.tooltip div:last-child {
-		margin-bottom: 0;
 	}
 
 	/* --- Scrollytelling Layout (Desktop) --- */
