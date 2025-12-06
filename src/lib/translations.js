@@ -224,11 +224,11 @@ export const en = {
 
   audioSection: {
     heading: "New Section",
-    text: "Of the 38 commanding officers identified in this investigation, two are confirmed to be in custody, 14 are confirmed to be absconding, and 22 are believed to be in active service.",
+    text: ["Of the 38 commanding officers identified in this investigation, two are confirmed to be in custody, 14 are confirmed to be absconding, and 22 are believed to be in active service.",
           "The Daily Star contacted 18 of the 22 officers currently in service. The remaining four could not be reached by phone or through the contact numbers of their outposts.",
           "All five DCs currently in service have denied involvement in police shootings, stating they neither gave orders to fire nor were they physically present at the locations where the protesters were shot.",
           "Of the nine senior AC and ADCs believed to be in service, contact was made with five. Four of them either denied involvement or declined to comment, citing the ongoing investigation.",
-          "Only one officer, Ihsanul Firdous, former ADC of the Dhanmondi zone, offered a detailed account of his involvement.",
+          "Only one officer, Ihsanul Firdous, former ADC of the Dhanmondi zone, offered a detailed account of his involvement."],
     accordionTitle: "Placeholder Name",
     items: [
       {
