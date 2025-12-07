@@ -17,27 +17,7 @@
   let documentsOpen = false;
   let audioSectionOpen = false;
 
-  // DATA FOR THE WIDE DESKTOP TABLE
-  // This structure is for the original wide table on large screens.
-  t.methodologySection.table = {
-    headers: [
-      'Training & Development',
-      'Specialized Operational Units',
-      'Geographic Field Commands',
-      'Central & Regional Administration',
-      'Investigation & Intelligence'
-    ],
-    rows: [
-      ['Bangladesh Police Academy', 'Anti-Terrorism Unit', 'Circle', 'Police Headquarters', 'CID'],
-      ['In service training centre', 'Armed Police Battelion (APBn)', 'District Police', 'Range Office', 'PBI'],
-      ['Police Staff Collage', 'Highway Police', 'Metropolitons', null, 'SB'],
-      ['Police Special Training School', 'Industrial police', null, null, null],
-      ['Police Training Center', 'Navy Police', null, null, null],
-      [null, 'RAB', null, null, null],
-      [null, 'Railway Police', null, null, null],
-      [null, 'Tourist Police', null, null, null]
-    ]
-  };
+
 
   // DATA FOR THE NARROW MOBILE TABLE
   // This structure is for the single-column table on small screens.
@@ -201,7 +181,7 @@
     {/if}
     {#if chunk.name === 'AudioSection'}
       <div class="article-text">
-        <div><h2>{t.audioSection.heading}</h2> <p>{t.audioSection.text}</p></div>
+        <div><h2>{t.audioSection.heading}</h2> <p>{@html t.audioSection.text}</p></div>
         <div class="placeholder-accordion-section">
           <div class="methodology-headline" class:open={audioSectionOpen} on:click={() => (audioSectionOpen = !audioSectionOpen)}>
             <span>{t.audioSection.accordionTitle}</span> <div class="arrow"></div>
@@ -209,7 +189,7 @@
           {#if audioSectionOpen}
             <div class="methodology-content" transition:slide>
               {#each t.audioSection.items as item}
-                <h5>{item.headline}</h5> <p class="placeholder-text">{item.text}</p>
+                <h5>{item.headline}</h5> <p>{@html item.text}</p> 
                 {#if item.iframeSrc}<iframe class="soundcloud-iframe" scrolling="no" frameborder="no" allow="autoplay" src={item.iframeSrc} title={item.headline}></iframe>{/if}
               {/each}
             </div>

@@ -11,5 +11,5 @@ sl,thana,lat,lon,zoom,amo_type,action,date,position,overlay_color
 10,All,23.72,90.3926756,11,t56,zoom_map,19/07/2024,,
 11,0,23.72,90.3926756,11,0,zoom_map,19/07/2024,centre,ffffff
 12,0,23.72,90.3926756,11,"lethal, rubber_cartridge",zoom_map,19/07/2024,centre,ffffff
-13,0,23.72,90.3926756,10,"lethal, rubber_cartridge",,20/07/2024,,
+13,All,23.72,90.3926756,10,"lethal, rubber_cartridge",,20/07/2024,,
 14,0,23.72,90.3926756,10,,,,centre,ffffff
